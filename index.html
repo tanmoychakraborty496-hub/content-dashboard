@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="icon" href="favicon.ico"
+<link rel="icon" href="favicon.ico">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Florance Healthcare — Content Calendar</title>
+<title>Content Calendar</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap');
  
@@ -292,12 +292,12 @@
   <div class="header-brand">
     <div class="brand-mark">✦</div>
     <div>
-      <div class="brand-name">Florance Healthcare</div>
-      <div class="brand-sub">Content Calendar · 20-Week Plan</div>
+      <div class="brand-name">Content Calendar</div>
+      <div class="brand-sub">Content Calendar · Weekly Plan</div>
     </div>
   </div>
   <div class="header-meta">
-    <span class="header-badge">📅 Week 1 – 20 &nbsp;·&nbsp; 5 Months</span>
+    <span class="header-badge" id="header-badge"></span>
     <button class="btn-add-week" onclick="addWeekBlock()">+ Add Week</button>
   </div>
 </header>
@@ -318,13 +318,26 @@
 </div>
  
 <script>
+
+function updateHeaderBadge() {
+  const startDate = new Date(START);
+
+  const options = { day: '2-digit', month: 'short', year: 'numeric' };
+  const formatted = startDate.toLocaleDateString('en-GB', options);
+
+  // Calculate months (20 weeks ≈ 5 months)
+  const months = Math.round((weeks.length * 7) / 30);
+
+  document.getElementById('header-badge').textContent =
+    `📅 Week 1 – ${formatted} · ${months} Months`;
+}
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
 const DAYS_SHORT = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
  
 // Build 20 weeks of data
 // Start date: Monday 5 May 2025  (adjust as needed)
-const START = new Date(2025, 4, 5); // May 5 2025
+const START = new Date(2026, 3, 21);// May 5 2025
  
 let doctorDidiEp = 21;
  
@@ -576,6 +589,7 @@ function updateStats() {
  
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 renderAll();
+updateHeaderBadge();
 </script>
 </body>
 </html>
