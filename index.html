@@ -323,7 +323,7 @@
 ════════════════════════════════════════════════════════════════ -->
 <script type="module">
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-import { getFirestore, collection, onSnapshot, setDoc, doc }
+import { getFirestore, collection, onSnapshot, setDoc, deleteDoc, doc }
                             from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
  
 // ─── Firebase init ────────────────────────────────────────────────────────────
@@ -340,6 +340,9 @@ const db  = getFirestore(app);
  
 // ─── Constants ────────────────────────────────────────────────────────────────
 const START = new Date(2026, 3, 21); // 21 Apr 2026
+// Set true once to wipe + rebuild Firestore with new 3-cards-per-day structure.
+// After confirming it works, set back to false and redeploy.
+const FORCE_RESET = true;
  
 // ─── State ────────────────────────────────────────────────────────────────────
 let weeks = [];
@@ -369,7 +372,7 @@ function saveToFirebase(weekIndex) {
 let _firstSnapshot = true;
  
 function startRealtimeSync() {
-  onSnapshot(collection(db, "calendar"), (snapshot) => {
+  onSnapshot(collection(db, "calendar"), async (snapshot) => {
     // While the local user is actively typing, skip remote updates
     // to avoid cursor-jumping. _saveTimer being set means a save is pending.
     if (!_firstSnapshot && _saveTimer) return;
@@ -377,10 +380,15 @@ function startRealtimeSync() {
     const loaded = [];
     snapshot.forEach(d => loaded.push(d.data()));
  
-    if (loaded.length === 0) {
-      // First-ever load — seed Firestore with default weeks
+    if (FORCE_RESET || loaded.length === 0) {
+      // Wipe old data and rebuild with new structure
+      for (let i = 0; i < Math.max(loaded.length, 25); i++) {
+        try { await deleteDoc(doc(db, "calendar", "week-" + i)); } catch(_) {}
+      }
       weeks = buildWeeks();
-      saveToFirebase(); // save all
+      for (let i = 0; i < weeks.length; i++) {
+        await setDoc(doc(db, "calendar", "week-" + i), weeks[i]);
+      }
     } else {
       loaded.sort((a, b) => (a.weekNum || 0) - (b.weekNum || 0));
       weeks = loaded;
@@ -420,6 +428,7 @@ function buildWeeks() {
       const isMonday = d === 0;
  
       if (isMonday) {
+        // Card 1 — Doctor Didi episode
         rows.push({
           id: uid(), date: dateStr, day: dayName,
           isMonday: true, isDoctorDidi: true,
@@ -428,19 +437,28 @@ function buildWeeks() {
           script: '', visual: '', reference: '', assignedTo: '',
           status: 'Idea', deadline: dateStr
         });
+        // Cards 2 & 3 — blank slots for other team members
         rows.push({
           id: uid(), date: dateStr, day: dayName,
           isMonday: true, isDoctorDidi: false,
           title: '', script: '', visual: '', reference: '', assignedTo: '',
           status: 'Idea', deadline: dateStr
         });
-      } else if (d < 6) { // Tue–Sat
         rows.push({
           id: uid(), date: dateStr, day: dayName,
-          isMonday: false, isDoctorDidi: false,
+          isMonday: true, isDoctorDidi: false,
           title: '', script: '', visual: '', reference: '', assignedTo: '',
           status: 'Idea', deadline: dateStr
         });
+      } else if (d < 6) { // Tue–Sat — 3 blank cards each
+        for (let s = 0; s < 3; s++) {
+          rows.push({
+            id: uid(), date: dateStr, day: dayName,
+            isMonday: false, isDoctorDidi: false,
+            title: '', script: '', visual: '', reference: '', assignedTo: '',
+            status: 'Idea', deadline: dateStr
+          });
+        }
       }
     }
     result.push({ weekNum: w + 1, rows });
