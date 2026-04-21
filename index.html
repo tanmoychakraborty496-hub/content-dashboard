@@ -32,6 +32,14 @@
     --s-shooting: #fef3c7; --s-shooting-t: #92400e;
     --s-editing: #dbeafe; --s-editing-t: #1e40af;
     --s-posted: #d1fae5; --s-posted-t: #065f46;
+ 
+    /* Day colours */
+    --day-mon-bg: #fffbeb; --day-mon-border: #f59e0b; --day-mon-badge: #fef3c7; --day-mon-t: #92400e;
+    --day-tue-bg: #fdf2f8; --day-tue-border: #ec4899; --day-tue-badge: #fce7f3; --day-tue-t: #9d174d;
+    --day-wed-bg: #eff6ff; --day-wed-border: #3b82f6; --day-wed-badge: #dbeafe; --day-wed-t: #1e40af;
+    --day-thu-bg: #fff7ed; --day-thu-border: #f97316; --day-thu-badge: #ffedd5; --day-thu-t: #9a3412;
+    --day-fri-bg: #f0fdf4; --day-fri-border: #22c55e; --day-fri-badge: #dcfce7; --day-fri-t: #14532d;
+    --day-sat-bg: #faf5ff; --day-sat-border: #a855f7; --day-sat-badge: #f3e8ff; --day-sat-t: #581c87;
   }
  
   body {
@@ -133,6 +141,45 @@
   .card.is-monday {
     background: var(--monday-stripe);
     border-left: 3px solid var(--monday-accent);
+  }
+ 
+  /* Day-coloured left border */
+  .card.day-mon { background: var(--day-mon-bg); border-left: 3px solid var(--day-mon-border); }
+  .card.day-tue { background: var(--day-tue-bg); border-left: 3px solid var(--day-tue-border); }
+  .card.day-wed { background: var(--day-wed-bg); border-left: 3px solid var(--day-wed-border); }
+  .card.day-thu { background: var(--day-thu-bg); border-left: 3px solid var(--day-thu-border); }
+  .card.day-fri { background: var(--day-fri-bg); border-left: 3px solid var(--day-fri-border); }
+  .card.day-sat { background: var(--day-sat-bg); border-left: 3px solid var(--day-sat-border); }
+ 
+  /* Published state */
+  .card.is-published { opacity: 0.72; }
+  .card.is-published .card-body { position: relative; }
+  .card.is-published .card-body::after {
+    content: ''; position: absolute; inset: 0;
+    background: rgba(209,250,229,0.45);
+    pointer-events: none; border-radius: 0 0 var(--radius) var(--radius);
+  }
+  .card.is-published .inp-text,
+  .card.is-published .inp-area,
+  .card.is-published .inp-date,
+  .card.is-published .inp-day { text-decoration: line-through; color: var(--text-muted); }
+ 
+  /* Published checkbox button */
+  .btn-publish {
+    background: none; border: 1.5px solid var(--border);
+    border-radius: 6px; width: 28px; height: 28px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 14px; transition: all .15s; color: var(--text-muted);
+    flex-shrink: 0;
+  }
+  .btn-publish:hover { background: #d1fae5; border-color: #22c55e; color: #15803d; }
+  .btn-publish.active { background: #d1fae5; border-color: #22c55e; color: #15803d; }
+  .published-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    background: #d1fae5; color: #065f46;
+    font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 99px;
+    border: 1px solid #6ee7b7;
   }
  
   .card-topbar {
@@ -414,18 +461,27 @@ function startRealtimeSync() {
 }
  
 // ─── Data builder ─────────────────────────────────────────────────────────────
+// START = 21 Apr 2026 which is a TUESDAY.
+// Each "week" runs Tue–Mon (7 days), matching the real calendar.
+// Monday (d=6 in our loop) gets the Doctor Didi card.
+// Sun (d=6 of JS week) is skipped — only Tue–Sat + Mon publish days.
 function buildWeeks() {
   const result = [];
   let doctorDidiEp = 7;
+  // Day names in our loop order: start from Tuesday (JS day 2)
+  const DAY_NAMES = ["Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday","Monday"];
  
   for (let w = 0; w < 20; w++) {
     const rows = [];
     for (let d = 0; d < 7; d++) {
       const date = new Date(START);
       date.setDate(START.getDate() + w * 7 + d);
-      const dayName = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][d];
+      const dayName = DAY_NAMES[d];
       const dateStr = date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-      const isMonday = d === 0;
+      const isMonday = dayName === "Monday";
+      const isSunday = dayName === "Sunday";
+ 
+      if (isSunday) continue; // skip Sundays
  
       if (isMonday) {
         // Card 1 — Doctor Didi episode
@@ -435,28 +491,25 @@ function buildWeeks() {
           episode: doctorDidiEp++,
           title: `Doctor Didi Episode ${doctorDidiEp - 1}`,
           script: '', visual: '', reference: '', assignedTo: '',
-          status: 'Idea', deadline: dateStr
+          status: 'Idea', deadline: dateStr, published: false
         });
-        // Cards 2 & 3 — blank slots for other team members
-        rows.push({
-          id: uid(), date: dateStr, day: dayName,
-          isMonday: true, isDoctorDidi: false,
-          title: '', script: '', visual: '', reference: '', assignedTo: '',
-          status: 'Idea', deadline: dateStr
-        });
-        rows.push({
-          id: uid(), date: dateStr, day: dayName,
-          isMonday: true, isDoctorDidi: false,
-          title: '', script: '', visual: '', reference: '', assignedTo: '',
-          status: 'Idea', deadline: dateStr
-        });
-      } else if (d < 6) { // Tue–Sat — 3 blank cards each
+        // Cards 2 & 3
+        for (let s = 0; s < 2; s++) {
+          rows.push({
+            id: uid(), date: dateStr, day: dayName,
+            isMonday: true, isDoctorDidi: false,
+            title: '', script: '', visual: '', reference: '', assignedTo: '',
+            status: 'Idea', deadline: dateStr, published: false
+          });
+        }
+      } else {
+        // Tue–Sat — 3 blank cards
         for (let s = 0; s < 3; s++) {
           rows.push({
             id: uid(), date: dateStr, day: dayName,
             isMonday: false, isDoctorDidi: false,
             title: '', script: '', visual: '', reference: '', assignedTo: '',
-            status: 'Idea', deadline: dateStr
+            status: 'Idea', deadline: dateStr, published: false
           });
         }
       }
@@ -531,9 +584,16 @@ function weekDateRange(week) {
   return first.date + (last && last.date !== first.date ? ' — ' + last.date : '');
 }
  
+const DAY_CLASS = {
+  Monday:'day-mon', Tuesday:'day-tue', Wednesday:'day-wed',
+  Thursday:'day-thu', Friday:'day-fri', Saturday:'day-sat'
+};
+ 
 function buildCard(row, wi, ri) {
+  const dayClass = DAY_CLASS[row.day] || '';
+  const publishedClass = row.published ? ' is-published' : '';
   const card = document.createElement('div');
-  card.className = 'card' + (row.isMonday ? ' is-monday' : '') + (row.isBlank ? ' blank-row' : '');
+  card.className = 'card ' + dayClass + publishedClass + (row.isBlank ? ' blank-row' : '');
   card.dataset.id = row.id;
  
   card.innerHTML = `
@@ -560,6 +620,9 @@ function buildCard(row, wi, ri) {
           `<option value="${s}" ${row.status === s ? 'selected' : ''}>${s}</option>`
         ).join('')}
       </select>
+      <button class="btn-publish ${row.published ? 'active' : ''}" title="Mark as Published"
+        onclick="window._togglePublished('${row.id}',${wi})">✓</button>
+      ${row.published ? '<span class="published-badge">✓ Published</span>' : ''}
       <button class="btn-icon" title="Duplicate"
         onclick="window._duplicateRow('${row.id}',${wi},${ri})">⧉</button>
       <button class="btn-icon del" title="Delete"
@@ -668,6 +731,15 @@ function deleteRow(id, wi) {
   saveToFirebase(wi);
 }
  
+function togglePublished(id, wi) {
+  const row = weeks[wi].rows.find(r => r.id === id);
+  if (!row) return;
+  row.published = !row.published;
+  if (row.published) row.status = 'Posted';
+  renderAll();
+  saveToFirebase(wi);
+}
+ 
 function addRow(wi) {
   weeks[wi].rows.push({
     id: uid(), date: '', day: '', isMonday: false, isDoctorDidi: false,
@@ -724,7 +796,8 @@ function updateHeaderBadge() {
 window._updateField  = updateField;
 window._styleStatus  = styleStatus;
 window._duplicateRow = duplicateRow;
-window._deleteRow    = deleteRow;
+window._deleteRow        = deleteRow;
+window._togglePublished  = togglePublished;
 window._addRow       = addRow;
 window.addWeekBlock  = addWeekBlock;
  
