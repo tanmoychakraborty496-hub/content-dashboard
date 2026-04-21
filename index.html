@@ -33,7 +33,6 @@
     --s-editing: #dbeafe; --s-editing-t: #1e40af;
     --s-posted: #d1fae5; --s-posted-t: #065f46;
  
-    /* Day colours */
     --day-mon-bg: #fffbeb; --day-mon-border: #f59e0b; --day-mon-badge: #fef3c7; --day-mon-t: #92400e;
     --day-tue-bg: #fdf2f8; --day-tue-border: #ec4899; --day-tue-badge: #fce7f3; --day-tue-t: #9d174d;
     --day-wed-bg: #eff6ff; --day-wed-border: #3b82f6; --day-wed-badge: #dbeafe; --day-wed-t: #1e40af;
@@ -138,10 +137,6 @@
     transition: box-shadow .15s;
   }
   .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.09); }
-  .card.is-monday {
-    background: var(--monday-stripe);
-    border-left: 3px solid var(--monday-accent);
-  }
  
   /* Day-coloured left border */
   .card.day-mon { background: var(--day-mon-bg); border-left: 3px solid var(--day-mon-border); }
@@ -362,18 +357,12 @@
   <div id="calendar"></div>
 </div>
  
-<!-- ═══════════════════════════════════════════════════════════════
-     SINGLE MODULE SCRIPT — Firebase + all app logic live here
-     so db, saveToFirebase, loadFromFirebase share the same scope.
-     Global helpers (addWeekBlock, addRow, etc.) are attached to
-     window so inline onclick="" attributes can reach them.
-════════════════════════════════════════════════════════════════ -->
 <script type="module">
 import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-import { getFirestore, collection, onSnapshot, setDoc, deleteDoc, doc }
+import { getFirestore, collection, onSnapshot, setDoc, deleteDoc, doc, getDocs }
                             from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
  
-// ─── Firebase init ────────────────────────────────────────────────────────────
+// ─── Firebase init ─────────────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyB6GM8wcPKCubD6q3SqU9dTz8d9fd26FKc",
   authDomain: "content-dashboard-9e60c.firebaseapp.com",
@@ -385,73 +374,114 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
  
-// ─── Constants ────────────────────────────────────────────────────────────────
+// ─── Constants ─────────────────────────────────────────────────────────────
 const START = new Date(2026, 3, 21); // 21 Apr 2026
-// Set true once to wipe + rebuild Firestore with new 3-cards-per-day structure.
-// After confirming it works, set back to false and redeploy.
-const FORCE_RESET = true;
  
-// ─── State ────────────────────────────────────────────────────────────────────
+// FIX 1: FORCE_RESET is now false — set to true ONLY once to wipe & rebuild,
+// then immediately set back to false and redeploy. Leaving it true deletes
+// all data on every page load.
+const FORCE_RESET = false;
+ 
+// ─── State ─────────────────────────────────────────────────────────────────
 let weeks = [];
  
-// ─── Firebase persistence ─────────────────────────────────────────────────────
-// Debounce saves — only writes the changed week, not all 20.
+// ─── Firebase persistence ──────────────────────────────────────────────────
+// Debounced saves — only writes the changed week, not all 20.
 let _saveTimer = null;
 const _dirtyWeeks = new Set();
+ 
+// FIX 4: Track whether a local edit is in-flight so we can decide whether
+// to apply a remote snapshot. We use a dedicated flag rather than checking
+// _saveTimer, because the timer is cleared before the awaited setDoc
+// finishes — leaving a window where remote updates were wrongly applied.
+let _localEditInFlight = false;
+ 
+// FIX 4 (cont.): If a remote snapshot arrives while we're mid-edit, queue
+// it here and apply it once the save completes.
+let _pendingRemoteSnapshot = null;
  
 function saveToFirebase(weekIndex) {
   if (weekIndex !== undefined) _dirtyWeeks.add(weekIndex);
   clearTimeout(_saveTimer);
   _saveTimer = setTimeout(async () => {
+    _localEditInFlight = true;
     const toSave = _dirtyWeeks.size > 0 ? [..._dirtyWeeks] : weeks.map((_, i) => i);
     _dirtyWeeks.clear();
     try {
       for (const i of toSave) {
         if (weeks[i]) await setDoc(doc(db, "calendar", "week-" + i), weeks[i]);
       }
-    } catch (e) { /* silent — user edits still held in memory */ }
+    } catch (e) {
+      // Silent — user edits are still held in memory
+    } finally {
+      _localEditInFlight = false;
+      // Apply any remote snapshot that arrived while we were saving
+      if (_pendingRemoteSnapshot) {
+        applyRemoteSnapshot(_pendingRemoteSnapshot);
+        _pendingRemoteSnapshot = null;
+      }
+    }
   }, 800);
 }
  
-// ─── Real-time listener ───────────────────────────────────────────────────────
-// onSnapshot fires immediately on load (replaces getDocs) AND whenever any
-// collaborator saves a change — all open tabs update automatically.
+// ─── Real-time listener ────────────────────────────────────────────────────
+// onSnapshot fires immediately on load AND whenever any collaborator saves.
 let _firstSnapshot = true;
+// FIX 3: Guard against the reset loop — only allow one reset run per session.
+let _resetDone = false;
  
 function startRealtimeSync() {
   onSnapshot(collection(db, "calendar"), async (snapshot) => {
-    // While the local user is actively typing, skip remote updates
-    // to avoid cursor-jumping. _saveTimer being set means a save is pending.
-    if (!_firstSnapshot && _saveTimer) return;
- 
-    const loaded = [];
-    snapshot.forEach(d => loaded.push(d.data()));
- 
-    if (FORCE_RESET || loaded.length === 0) {
-      // Wipe old data and rebuild with new structure
-      for (let i = 0; i < Math.max(loaded.length, 25); i++) {
-        try { await deleteDoc(doc(db, "calendar", "week-" + i)); } catch(_) {}
-      }
-      weeks = buildWeeks();
-      for (let i = 0; i < weeks.length; i++) {
-        await setDoc(doc(db, "calendar", "week-" + i), weeks[i]);
-      }
-    } else {
-      loaded.sort((a, b) => (a.weekNum || 0) - (b.weekNum || 0));
-      weeks = loaded;
-    }
  
     if (_firstSnapshot) {
-      // First load: render + hide overlay
+      // ── First load ──────────────────────────────────────────────────────
       _firstSnapshot = false;
+ 
+      const loaded = [];
+      snapshot.forEach(d => loaded.push(d.data()));
+ 
+      if (FORCE_RESET && !_resetDone) {
+        // FIX 3: Set the guard BEFORE any async work so a second snapshot
+        // fired by the deletes/writes below doesn't trigger another reset.
+        _resetDone = true;
+ 
+        // Fetch actual doc IDs rather than guessing a numeric range to
+        // avoid over-deleting. Use getDocs for a clean one-off read.
+        const allDocs = await getDocs(collection(db, "calendar"));
+        for (const d of allDocs.docs) {
+          try { await deleteDoc(doc(db, "calendar", d.id)); } catch(_) {}
+        }
+        weeks = buildWeeks();
+        for (let i = 0; i < weeks.length; i++) {
+          await setDoc(doc(db, "calendar", "week-" + i), weeks[i]);
+        }
+      } else if (loaded.length === 0) {
+        // Empty database on first load — seed with default structure
+        weeks = buildWeeks();
+        for (let i = 0; i < weeks.length; i++) {
+          await setDoc(doc(db, "calendar", "week-" + i), weeks[i]);
+        }
+      } else {
+        loaded.sort((a, b) => (a.weekNum || 0) - (b.weekNum || 0));
+        weeks = loaded;
+      }
+ 
       document.getElementById('loading-overlay').style.display = 'none';
       renderAll();
       updateHeaderBadge();
+ 
     } else {
-      // Subsequent updates from other collaborators: re-render silently
-      renderAll();
+      // ── Subsequent update from another collaborator ──────────────────
+      // FIX 4: If a local save is in-flight, queue the snapshot instead of
+      // dropping it entirely. It will be applied once the save completes.
+      if (_localEditInFlight || _saveTimer) {
+        _pendingRemoteSnapshot = snapshot;
+        return;
+      }
+      applyRemoteSnapshot(snapshot);
     }
-  }, (e) => {
+ 
+  }, () => {
     // Firestore error fallback — render local data so app still works
     weeks = buildWeeks();
     document.getElementById('loading-overlay').style.display = 'none';
@@ -460,15 +490,24 @@ function startRealtimeSync() {
   });
 }
  
-// ─── Data builder ─────────────────────────────────────────────────────────────
-// START = 21 Apr 2026 which is a TUESDAY.
-// Each "week" runs Tue–Mon (7 days), matching the real calendar.
-// Monday (d=6 in our loop) gets the Doctor Didi card.
-// Sun (d=6 of JS week) is skipped — only Tue–Sat + Mon publish days.
+// Extracted so both the main listener and the queued-snapshot path use it.
+function applyRemoteSnapshot(snapshot) {
+  const loaded = [];
+  snapshot.forEach(d => loaded.push(d.data()));
+  if (loaded.length === 0) return;
+  loaded.sort((a, b) => (a.weekNum || 0) - (b.weekNum || 0));
+  weeks = loaded;
+  renderAll();
+}
+ 
+// ─── Data builder ──────────────────────────────────────────────────────────
+// START = 21 Apr 2026 (Tuesday).
+// Each "week" runs Tue–Mon (7 days). Sunday is skipped.
+// Monday gets the Doctor Didi card + 2 extras.
+// Tue–Sat get 3 blank cards each.
 function buildWeeks() {
   const result = [];
   let doctorDidiEp = 7;
-  // Day names in our loop order: start from Tuesday (JS day 2)
   const DAY_NAMES = ["Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday","Monday"];
  
   for (let w = 0; w < 20; w++) {
@@ -521,7 +560,7 @@ function buildWeeks() {
  
 function uid() { return Math.random().toString(36).slice(2, 9); }
  
-// ─── Month separators (auto-computed from START date) ─────────────────────────
+// ─── Month separators ──────────────────────────────────────────────────────
 function getMonthAtWeek() {
   const map = {};
   let lastMonth = -1;
@@ -529,7 +568,6 @@ function getMonthAtWeek() {
     const d = new Date(START);
     d.setDate(START.getDate() + w * 7);
     const m = d.getMonth();
-    const y = d.getFullYear();
     if (m !== lastMonth) {
       const label = d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
       map[w + 1] = label;
@@ -539,7 +577,7 @@ function getMonthAtWeek() {
   return map;
 }
  
-// ─── Render ───────────────────────────────────────────────────────────────────
+// ─── Render ────────────────────────────────────────────────────────────────
 function renderAll() {
   const cal = document.getElementById('calendar');
   cal.innerHTML = '';
@@ -577,11 +615,14 @@ function renderAll() {
   updateStats();
 }
  
+// FIX 5: weekDateRange now has a fallback so headers never render blank.
 function weekDateRange(week) {
-  const first = week.rows.find(r => r.date);
-  const last  = [...week.rows].reverse().find(r => r.date);
-  if (!first) return '';
-  return first.date + (last && last.date !== first.date ? ' — ' + last.date : '');
+  const rows = week.rows || [];
+  const datedRows = rows.filter(r => r.date && r.date.trim() !== '');
+  if (datedRows.length === 0) return `Week ${week.weekNum}`;
+  const first = datedRows[0];
+  const last  = datedRows[datedRows.length - 1];
+  return first.date + (last.date !== first.date ? ' — ' + last.date : '');
 }
  
 const DAY_CLASS = {
@@ -593,15 +634,15 @@ function buildCard(row, wi, ri) {
   const dayClass = DAY_CLASS[row.day] || '';
   const publishedClass = row.published ? ' is-published' : '';
   const card = document.createElement('div');
-  card.className = 'card ' + dayClass + publishedClass + (row.isBlank ? ' blank-row' : '');
+  card.className = 'card ' + dayClass + publishedClass;
   card.dataset.id = row.id;
  
   card.innerHTML = `
     <div class="card-topbar">
       <div class="field-date-day">
-        <input class="inp-date" type="text" value="${row.date}" placeholder="DD Mon YYYY"
+        <input class="inp-date" type="text" value="${esc(row.date)}" placeholder="DD Mon YYYY"
           oninput="window._updateField('${row.id}','date',this.value)" />
-        <input class="inp-day" type="text" value="${row.day}" placeholder="Day"
+        <input class="inp-day" type="text" value="${esc(row.day)}" placeholder="Day"
           oninput="window._updateField('${row.id}','day',this.value)" />
       </div>
       ${row.isDoctorDidi
@@ -612,7 +653,7 @@ function buildCard(row, wi, ri) {
         : ''}
       <div class="spacer"></div>
       <span class="deadline-label">Deadline:</span>
-      <input class="inp-deadline" type="text" value="${row.deadline}" placeholder="DD Mon YYYY"
+      <input class="inp-deadline" type="text" value="${esc(row.deadline)}" placeholder="DD Mon YYYY"
         oninput="window._updateField('${row.id}','deadline',this.value)" />
       <select class="status-select"
         onchange="window._updateField('${row.id}','status',this.value); window._styleStatus(this)">
@@ -683,16 +724,21 @@ function buildBlankRow(wi) {
  
 function esc(s) {
   if (!s) return '';
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
 }
  
-// ─── Interactions ─────────────────────────────────────────────────────────────
+// ─── Interactions ──────────────────────────────────────────────────────────
 function updateField(id, field, val) {
   for (let i = 0; i < weeks.length; i++) {
     const row = weeks[i].rows.find(r => r.id === id);
     if (row) {
       row[field] = val;
-      updateStats();
+      // Only re-run stats on status changes to avoid layout thrash on typing
+      if (field === 'status' || field === 'published') updateStats();
       saveToFirebase(i);
       return;
     }
@@ -715,7 +761,7 @@ function styleStatus(sel) {
 function duplicateRow(id, wi, ri) {
   const row = weeks[wi].rows.find(r => r.id === id);
   if (!row) return;
-  const clone = Object.assign({}, row, { id: uid(), isDoctorDidi: false });
+  const clone = Object.assign({}, row, { id: uid(), isDoctorDidi: false, published: false });
   weeks[wi].rows.splice(ri + 1, 0, clone);
   renderAll();
   saveToFirebase(wi);
@@ -740,47 +786,111 @@ function togglePublished(id, wi) {
   saveToFirebase(wi);
 }
  
+// FIX 2: addRow now includes published: false so the field is always present.
+// FIX 8: addWeekBlock uses buildSingleWeek which follows the 3-cards-per-day
+//         structure, matching the initial buildWeeks() output.
 function addRow(wi) {
+  const week = weeks[wi];
+  // Infer date from the week's first dated row so new rows aren't completely blank
+  const refRow = (week.rows || []).find(r => r.date);
   weeks[wi].rows.push({
-    id: uid(), date: '', day: '', isMonday: false, isDoctorDidi: false,
+    id: uid(),
+    date: refRow ? refRow.date : '',
+    day: '',
+    isMonday: false,
+    isDoctorDidi: false,
     title: '', script: '', visual: '', reference: '', assignedTo: '',
-    status: 'Idea', deadline: ''
+    status: 'Idea',
+    deadline: refRow ? refRow.date : '',
+    published: false  // FIX 2
   });
   renderAll();
   saveToFirebase(wi);
   setTimeout(() => {
     const list = document.getElementById('cards-' + wi);
-    if (list) list.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (list) {
+      // Scroll to the second-to-last child (last real card, above the blank sentinel)
+      const children = list.children;
+      const target = children[children.length - 2] || children[children.length - 1];
+      target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }, 50);
 }
  
+// FIX 8: New weeks are built using the same 3-cards-per-day pattern as
+// buildWeeks(), not just a single blank card.
 function addWeekBlock() {
   const newWeekNum = weeks.length + 1;
-  const lastDate = new Date(START);
-  lastDate.setDate(START.getDate() + (newWeekNum - 1) * 7);
-  const dateStr = lastDate.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-  weeks.push({
-    weekNum: newWeekNum,
-    rows: [{
-      id: uid(), date: dateStr, day: 'Monday',
-      isMonday: true, isDoctorDidi: false,
-      title: '', script: '', visual: '', reference: '', assignedTo: '',
-      status: 'Idea', deadline: dateStr
-    }]
-  });
+  // Calculate the start date for the new week (Tue of that week)
+  const weekStart = new Date(START);
+  weekStart.setDate(START.getDate() + (newWeekNum - 1) * 7);
+ 
+  // Reuse buildWeeks logic for a single week slice
+  const DAY_NAMES = ["Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday","Monday"];
+  const rows = [];
+  // Doctor Didi episode numbering: pick up after the last seeded ep (7 + 20 weeks = ep 27)
+  let epNum = 7 + (newWeekNum - 1);
+ 
+  for (let d = 0; d < 7; d++) {
+    const date = new Date(weekStart);
+    date.setDate(weekStart.getDate() + d);
+    const dayName = DAY_NAMES[d];
+    const dateStr = date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+ 
+    if (dayName === "Sunday") continue;
+ 
+    if (dayName === "Monday") {
+      rows.push({
+        id: uid(), date: dateStr, day: dayName,
+        isMonday: true, isDoctorDidi: true,
+        episode: epNum,
+        title: `Doctor Didi Episode ${epNum}`,
+        script: '', visual: '', reference: '', assignedTo: '',
+        status: 'Idea', deadline: dateStr, published: false
+      });
+      for (let s = 0; s < 2; s++) {
+        rows.push({
+          id: uid(), date: dateStr, day: dayName,
+          isMonday: true, isDoctorDidi: false,
+          title: '', script: '', visual: '', reference: '', assignedTo: '',
+          status: 'Idea', deadline: dateStr, published: false
+        });
+      }
+    } else {
+      for (let s = 0; s < 3; s++) {
+        rows.push({
+          id: uid(), date: dateStr, day: dayName,
+          isMonday: false, isDoctorDidi: false,
+          title: '', script: '', visual: '', reference: '', assignedTo: '',
+          status: 'Idea', deadline: dateStr, published: false
+        });
+      }
+    }
+  }
+ 
+  weeks.push({ weekNum: newWeekNum, rows });
   renderAll();
   saveToFirebase(weeks.length - 1);
   setTimeout(() => document.getElementById('week-' + newWeekNum)?.scrollIntoView({ behavior: 'smooth' }), 50);
 }
  
-// ─── Stats ────────────────────────────────────────────────────────────────────
+// ─── Stats ─────────────────────────────────────────────────────────────────
+// FIX 7: Exclude rows that have no meaningful content (blank template rows)
+// from the total count so stats reflect actual planned posts.
 function updateStats() {
-  const all = weeks.flatMap(w => w.rows);
-  document.getElementById('stat-total').textContent    = all.length;
+  // A row is "real" if it has at least a title, script, or visual filled in
+  const isReal = r => (r.title || r.script || r.visual || r.assignedTo || '').trim() !== ''
+                   || r.status !== 'Idea'
+                   || r.published;
+ 
+  const all  = weeks.flatMap(w => w.rows || []);
+  const real = all.filter(isReal);
+ 
+  document.getElementById('stat-total').textContent    = real.length;
   document.getElementById('stat-posted').textContent   = all.filter(r => r.status === 'Posted').length;
   document.getElementById('stat-editing').textContent  = all.filter(r => r.status === 'Editing').length;
   document.getElementById('stat-shooting').textContent = all.filter(r => r.status === 'Shooting').length;
-  document.getElementById('stat-ideas').textContent    = all.filter(r => r.status === 'Idea').length;
+  document.getElementById('stat-ideas').textContent    = real.filter(r => r.status === 'Idea').length;
 }
  
 function updateHeaderBadge() {
@@ -791,17 +901,17 @@ function updateHeaderBadge() {
     `📅 Week 1 – ${formatted} · ${months} Months`;
 }
  
-// ─── Expose to inline onclick handlers ───────────────────────────────────────
+// ─── Expose to inline onclick handlers ────────────────────────────────────
 // (ES modules don't pollute global scope, so we attach helpers to window)
-window._updateField  = updateField;
-window._styleStatus  = styleStatus;
-window._duplicateRow = duplicateRow;
-window._deleteRow        = deleteRow;
-window._togglePublished  = togglePublished;
-window._addRow       = addRow;
-window.addWeekBlock  = addWeekBlock;
+window._updateField     = updateField;
+window._styleStatus     = styleStatus;
+window._duplicateRow    = duplicateRow;
+window._deleteRow       = deleteRow;
+window._togglePublished = togglePublished;
+window._addRow          = addRow;
+window.addWeekBlock     = addWeekBlock;
  
-// ─── Boot ─────────────────────────────────────────────────────────────────────
+// ─── Boot ──────────────────────────────────────────────────────────────────
 startRealtimeSync();
 </script>
 </body>
