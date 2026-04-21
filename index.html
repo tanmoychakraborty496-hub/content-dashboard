@@ -322,9 +322,9 @@
      window so inline onclick="" attributes can reach them.
 ════════════════════════════════════════════════════════════════ -->
 <script type="module">
-import { initializeApp }      from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-import { getFirestore, collection, getDocs, setDoc, deleteDoc, doc }
-                               from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+import { getFirestore, collection, onSnapshot, setDoc, doc }
+                            from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
  
 // ─── Firebase init ────────────────────────────────────────────────────────────
 const firebaseConfig = {
@@ -337,20 +337,15 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
-console.log("🔥 Firebase initialized, project:", firebaseConfig.projectId);
  
 // ─── Constants ────────────────────────────────────────────────────────────────
 const START = new Date(2026, 3, 21); // 21 Apr 2026
- 
-// ─── Set this to true ONE TIME to wipe + rebuild Firestore data ───────────────
-// After the page reloads and shows correct episodes, set back to false and redeploy
-const FORCE_RESET = true;
  
 // ─── State ────────────────────────────────────────────────────────────────────
 let weeks = [];
  
 // ─── Firebase persistence ─────────────────────────────────────────────────────
-// Debounce saves. Tracks dirty week indices so only changed weeks are written.
+// Debounce saves — only writes the changed week, not all 20.
 let _saveTimer = null;
 const _dirtyWeeks = new Set();
  
@@ -364,54 +359,50 @@ function saveToFirebase(weekIndex) {
       for (const i of toSave) {
         if (weeks[i]) await setDoc(doc(db, "calendar", "week-" + i), weeks[i]);
       }
-    } catch (e) {
-      console.error("Save error:", e);
-    }
+    } catch (e) { /* silent — user edits still held in memory */ }
   }, 800);
 }
  
-async function loadFromFirebase() {
-  console.log("🔥 loadFromFirebase() called, FORCE_RESET =", FORCE_RESET);
-  try {
-    const snapshot = await getDocs(collection(db, "calendar"));
+// ─── Real-time listener ───────────────────────────────────────────────────────
+// onSnapshot fires immediately on load (replaces getDocs) AND whenever any
+// collaborator saves a change — all open tabs update automatically.
+let _firstSnapshot = true;
+ 
+function startRealtimeSync() {
+  onSnapshot(collection(db, "calendar"), (snapshot) => {
+    // While the local user is actively typing, skip remote updates
+    // to avoid cursor-jumping. _saveTimer being set means a save is pending.
+    if (!_firstSnapshot && _saveTimer) return;
+ 
     const loaded = [];
     snapshot.forEach(d => loaded.push(d.data()));
-    console.log("🔥 Firestore returned", loaded.length, "week docs");
  
-    if (FORCE_RESET || loaded.length === 0) {
-      // Delete all existing docs first
-      console.log("🗑️ Deleting old Firestore data...");
-      for (let i = 0; i < Math.max(loaded.length, 20); i++) {
-        try { await deleteDoc(doc(db, "calendar", "week-" + i)); } catch(_) {}
-      }
-      console.log("⚠️ Building fresh default weeks (Ep. starts at 7)");
+    if (loaded.length === 0) {
+      // First-ever load — seed Firestore with default weeks
       weeks = buildWeeks();
-      console.log("💾 Saving fresh weeks to Firestore...");
-      await saveToFirebaseNow();
-      console.log("✅ Fresh weeks saved — set FORCE_RESET=false and redeploy");
+      saveToFirebase(); // save all
     } else {
       loaded.sort((a, b) => (a.weekNum || 0) - (b.weekNum || 0));
       weeks = loaded;
-      console.log("✅ Loaded from Firestore:", weeks.length, "weeks");
     }
-  } catch (e) {
-    console.error("❌ Firestore load error:", e.code, e.message);
+ 
+    if (_firstSnapshot) {
+      // First load: render + hide overlay
+      _firstSnapshot = false;
+      document.getElementById('loading-overlay').style.display = 'none';
+      renderAll();
+      updateHeaderBadge();
+    } else {
+      // Subsequent updates from other collaborators: re-render silently
+      renderAll();
+    }
+  }, (e) => {
+    // Firestore error fallback — render local data so app still works
     weeks = buildWeeks();
-    console.warn("⚠️ Using local fallback data");
-  } finally {
     document.getElementById('loading-overlay').style.display = 'none';
-  }
- 
-  renderAll();
-  updateHeaderBadge();
-}
- 
-// Immediate (non-debounced) save — used on first-run to ensure data lands in Firestore
-async function saveToFirebaseNow() {
-  for (let i = 0; i < weeks.length; i++) {
-    await setDoc(doc(db, "calendar", "week-" + i), weeks[i]);
-    if (i % 5 === 0) console.log("💾 Saved week", i);
-  }
+    renderAll();
+    updateHeaderBadge();
+  });
 }
  
 // ─── Data builder ─────────────────────────────────────────────────────────────
@@ -720,8 +711,7 @@ window._addRow       = addRow;
 window.addWeekBlock  = addWeekBlock;
  
 // ─── Boot ─────────────────────────────────────────────────────────────────────
-console.log("🚀 Module loaded — starting boot");
-loadFromFirebase();
+startRealtimeSync();
 </script>
 </body>
 </html>
