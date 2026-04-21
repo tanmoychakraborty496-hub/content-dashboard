@@ -323,7 +323,7 @@
 ════════════════════════════════════════════════════════════════ -->
 <script type="module">
 import { initializeApp }      from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-import { getFirestore, collection, getDocs, setDoc, doc }
+import { getFirestore, collection, getDocs, setDoc, deleteDoc, doc }
                                from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
  
 // ─── Firebase init ────────────────────────────────────────────────────────────
@@ -341,6 +341,10 @@ console.log("🔥 Firebase initialized, project:", firebaseConfig.projectId);
  
 // ─── Constants ────────────────────────────────────────────────────────────────
 const START = new Date(2026, 3, 21); // 21 Apr 2026
+ 
+// ─── Set this to true ONE TIME to wipe + rebuild Firestore data ───────────────
+// After the page reloads and shows correct episodes, set back to false and redeploy
+const FORCE_RESET = true;
  
 // ─── State ────────────────────────────────────────────────────────────────────
 let weeks = [];
@@ -367,24 +371,28 @@ function saveToFirebase(weekIndex) {
 }
  
 async function loadFromFirebase() {
-  console.log("🔥 loadFromFirebase() called");
+  console.log("🔥 loadFromFirebase() called, FORCE_RESET =", FORCE_RESET);
   try {
-    console.log("🔥 Attempting Firestore getDocs...");
     const snapshot = await getDocs(collection(db, "calendar"));
     const loaded = [];
     snapshot.forEach(d => loaded.push(d.data()));
     console.log("🔥 Firestore returned", loaded.length, "week docs");
  
-    if (loaded.length > 0) {
+    if (FORCE_RESET || loaded.length === 0) {
+      // Delete all existing docs first
+      console.log("🗑️ Deleting old Firestore data...");
+      for (let i = 0; i < Math.max(loaded.length, 20); i++) {
+        try { await deleteDoc(doc(db, "calendar", "week-" + i)); } catch(_) {}
+      }
+      console.log("⚠️ Building fresh default weeks (Ep. starts at 7)");
+      weeks = buildWeeks();
+      console.log("💾 Saving fresh weeks to Firestore...");
+      await saveToFirebaseNow();
+      console.log("✅ Fresh weeks saved — set FORCE_RESET=false and redeploy");
+    } else {
       loaded.sort((a, b) => (a.weekNum || 0) - (b.weekNum || 0));
       weeks = loaded;
       console.log("✅ Loaded from Firestore:", weeks.length, "weeks");
-    } else {
-      console.log("⚠️ No Firestore data — building default weeks");
-      weeks = buildWeeks();
-      console.log("💾 Saving default weeks to Firestore...");
-      await saveToFirebaseNow(); // save immediately on first run, not debounced
-      console.log("✅ Default weeks saved");
     }
   } catch (e) {
     console.error("❌ Firestore load error:", e.code, e.message);
