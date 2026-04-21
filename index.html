@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="icon" href="favicon.ico">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Content Calendar</title>
@@ -28,7 +27,6 @@
     --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
     --shadow-card: 0 2px 8px rgba(0,0,0,0.06);
  
-    /* Status colours */
     --s-idea: #f3f4f6; --s-idea-t: #374151;
     --s-script: #ede9fe; --s-script-t: #5b21b6;
     --s-shooting: #fef3c7; --s-shooting-t: #92400e;
@@ -44,7 +42,6 @@
     padding: 0;
   }
  
-  /* ── HEADER ── */
   .header {
     background: var(--surface);
     border-bottom: 1px solid var(--border);
@@ -79,10 +76,24 @@
   }
   .btn-add-week:hover { background: #0c6880; }
  
-  /* ── MAIN LAYOUT ── */
+  /* Loading overlay */
+  #loading-overlay {
+    position: fixed; inset: 0; z-index: 9999;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 12px;
+    font-size: 14px; color: var(--text-secondary);
+  }
+  #loading-overlay .spinner {
+    width: 32px; height: 32px; border-radius: 50%;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    animation: spin .7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+ 
   .main { padding: 28px 32px 80px; max-width: 1440px; margin: 0 auto; }
  
-  /* ── WEEK BLOCK ── */
   .week-block { margin-bottom: 36px; }
   .week-header {
     display: flex; align-items: center; gap: 12px;
@@ -108,7 +119,6 @@
   }
   .btn-add-row:hover { background: var(--accent-mid); }
  
-  /* ── CARDS ── */
   .cards-list { display: flex; flex-direction: column; gap: 8px; }
  
   .card {
@@ -120,13 +130,11 @@
     transition: box-shadow .15s;
   }
   .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.09); }
- 
   .card.is-monday {
     background: var(--monday-stripe);
     border-left: 3px solid var(--monday-accent);
   }
  
-  /* Card top bar */
   .card-topbar {
     display: flex; align-items: center; gap: 10px;
     padding: 10px 14px 8px;
@@ -160,7 +168,6 @@
  
   .card-topbar .spacer { flex: 1; }
  
-  /* Status select */
   .status-select {
     font-family: inherit; font-size: 12px; font-weight: 500;
     border: 1px solid var(--border); border-radius: 6px;
@@ -174,7 +181,6 @@
   }
   .status-select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-mid); }
  
-  /* Deadline */
   .inp-deadline {
     font-family: inherit; font-size: 12px;
     border: 1px solid transparent; border-radius: 5px;
@@ -186,7 +192,6 @@
   .inp-deadline:focus { border-color: var(--border); background: #fff; }
   .deadline-label { font-size: 11px; color: var(--text-muted); }
  
-  /* Duplicate & delete */
   .btn-icon {
     background: none; border: 1px solid var(--border);
     border-radius: 6px; width: 28px; height: 28px;
@@ -197,7 +202,6 @@
   .btn-icon:hover { background: var(--bg); border-color: var(--text-secondary); }
   .btn-icon.del:hover { background: #fee2e2; border-color: #f87171; color: #dc2626; }
  
-  /* Card body grid */
   .card-body {
     display: grid;
     grid-template-columns: 2fr 3fr 2fr 1.5fr 1.5fr;
@@ -243,11 +247,9 @@
   .inp-area:focus { border-color: var(--border); background: #fff; }
   .inp-area::placeholder { color: var(--text-muted); }
  
-  /* Blank row */
   .card.blank-row .card-body * { opacity: .5; }
   .card.blank-row { border-style: dashed; background: #fafafa; }
  
-  /* ── STATS BAR ── */
   .stats-bar {
     display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap;
   }
@@ -261,7 +263,6 @@
   .stat-val { font-size: 20px; font-weight: 600; color: var(--text-primary); }
   .stat-lbl { font-size: 11px; color: var(--text-muted); }
  
-  /* ── MONTH SEPARATOR ── */
   .month-sep {
     display: flex; align-items: center; gap: 12px;
     margin: 36px 0 20px;
@@ -276,35 +277,19 @@
   }
   .month-line { flex: 1; height: 1px; background: var(--border); }
  
-  /* Tooltip on hover for labels */
-  .field-label[title] { cursor: help; }
- 
-  /* Scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 </style>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-  const firebaseConfig = {
-  apiKey: "AIzaSyB6GM8wcPKCubD6q3SqU9dTz8d9fd26FKc",
-  authDomain: "content-dashboard-9e60c.firebaseapp.com",
-  projectId: "content-dashboard-9e60c",
-  storageBucket: "content-dashboard-9e60c.firebasestorage.app",
-  messagingSenderId: "258680332170",
-  appId: "1:258680332170:web:f5be1875be8849b2a33273"
-};
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  window.db = db;
-</script>
 </head>
 <body>
  
-<!-- HEADER -->
+<!-- Loading overlay — hidden once Firebase data loads -->
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <span>Loading calendar…</span>
+</div>
+ 
 <header class="header">
   <div class="header-brand">
     <div class="brand-mark">✦</div>
@@ -319,10 +304,7 @@
   </div>
 </header>
  
-<!-- MAIN -->
 <div class="main" id="main">
- 
-  <!-- Stats -->
   <div class="stats-bar">
     <div class="stat-pill"><span class="stat-val" id="stat-total">—</span><span class="stat-lbl">Total Posts</span></div>
     <div class="stat-pill"><span class="stat-val" id="stat-posted">—</span><span class="stat-lbl">Posted</span></div>
@@ -330,44 +312,113 @@
     <div class="stat-pill"><span class="stat-val" id="stat-shooting">—</span><span class="stat-lbl">Shooting</span></div>
     <div class="stat-pill"><span class="stat-val" id="stat-ideas">—</span><span class="stat-lbl">Ideas</span></div>
   </div>
- 
   <div id="calendar"></div>
 </div>
  
-<script>
-
-function updateHeaderBadge() {
-  const startDate = new Date(START);
-
-  const options = { day: '2-digit', month: 'short', year: 'numeric' };
-  const formatted = startDate.toLocaleDateString('en-GB', options);
-
-  // Calculate months (20 weeks ≈ 5 months)
-  const months = Math.round((weeks.length * 7) / 30);
-
-  document.getElementById('header-badge').textContent =
-    `📅 Week 1 – ${formatted} · ${months} Months`;
+<!-- ═══════════════════════════════════════════════════════════════
+     SINGLE MODULE SCRIPT — Firebase + all app logic live here
+     so db, saveToFirebase, loadFromFirebase share the same scope.
+     Global helpers (addWeekBlock, addRow, etc.) are attached to
+     window so inline onclick="" attributes can reach them.
+════════════════════════════════════════════════════════════════ -->
+<script type="module">
+import { initializeApp }      from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+import { getFirestore, collection, getDocs, setDoc, doc }
+                               from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+ 
+// ─── Firebase init ────────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyB6GM8wcPKCubD6q3SqU9dTz8d9fd26FKc",
+  authDomain: "content-dashboard-9e60c.firebaseapp.com",
+  projectId: "content-dashboard-9e60c",
+  storageBucket: "content-dashboard-9e60c.appspot.com",
+  messagingSenderId: "258680332170",
+  appId: "1:258680332170:web:f5be1875be8849b2a33273"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+console.log("🔥 Firebase initialized, project:", firebaseConfig.projectId);
+ 
+// ─── Constants ────────────────────────────────────────────────────────────────
+const START = new Date(2026, 3, 21); // 21 Apr 2026
+ 
+// ─── State ────────────────────────────────────────────────────────────────────
+let weeks = [];
+ 
+// ─── Firebase persistence ─────────────────────────────────────────────────────
+// Debounce saves. Tracks dirty week indices so only changed weeks are written.
+let _saveTimer = null;
+const _dirtyWeeks = new Set();
+ 
+function saveToFirebase(weekIndex) {
+  if (weekIndex !== undefined) _dirtyWeeks.add(weekIndex);
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(async () => {
+    const toSave = _dirtyWeeks.size > 0 ? [..._dirtyWeeks] : weeks.map((_, i) => i);
+    _dirtyWeeks.clear();
+    try {
+      for (const i of toSave) {
+        if (weeks[i]) await setDoc(doc(db, "calendar", "week-" + i), weeks[i]);
+      }
+    } catch (e) {
+      console.error("Save error:", e);
+    }
+  }, 800);
 }
-// ─── DATA ─────────────────────────────────────────────────────────────────────
-const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-const DAYS_SHORT = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
  
-// Build 20 weeks of data
-// Start date: Monday 5 May 2025  (adjust as needed)
-const START = new Date(2026, 3, 21);// May 5 2025
+async function loadFromFirebase() {
+  console.log("🔥 loadFromFirebase() called");
+  try {
+    console.log("🔥 Attempting Firestore getDocs...");
+    const snapshot = await getDocs(collection(db, "calendar"));
+    const loaded = [];
+    snapshot.forEach(d => loaded.push(d.data()));
+    console.log("🔥 Firestore returned", loaded.length, "week docs");
  
-let doctorDidiEp = 21;
+    if (loaded.length > 0) {
+      loaded.sort((a, b) => (a.weekNum || 0) - (b.weekNum || 0));
+      weeks = loaded;
+      console.log("✅ Loaded from Firestore:", weeks.length, "weeks");
+    } else {
+      console.log("⚠️ No Firestore data — building default weeks");
+      weeks = buildWeeks();
+      console.log("💾 Saving default weeks to Firestore...");
+      await saveToFirebaseNow(); // save immediately on first run, not debounced
+      console.log("✅ Default weeks saved");
+    }
+  } catch (e) {
+    console.error("❌ Firestore load error:", e.code, e.message);
+    weeks = buildWeeks();
+    console.warn("⚠️ Using local fallback data");
+  } finally {
+    document.getElementById('loading-overlay').style.display = 'none';
+  }
  
+  renderAll();
+  updateHeaderBadge();
+}
+ 
+// Immediate (non-debounced) save — used on first-run to ensure data lands in Firestore
+async function saveToFirebaseNow() {
+  for (let i = 0; i < weeks.length; i++) {
+    await setDoc(doc(db, "calendar", "week-" + i), weeks[i]);
+    if (i % 5 === 0) console.log("💾 Saved week", i);
+  }
+}
+ 
+// ─── Data builder ─────────────────────────────────────────────────────────────
 function buildWeeks() {
-  const weeks = [];
+  const result = [];
+  let doctorDidiEp = 21;
+ 
   for (let w = 0; w < 20; w++) {
     const rows = [];
     for (let d = 0; d < 7; d++) {
       const date = new Date(START);
       date.setDate(START.getDate() + w * 7 + d);
-      const isMonday = d === 0;
       const dayName = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][d];
       const dateStr = date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+      const isMonday = d === 0;
  
       if (isMonday) {
         rows.push({
@@ -375,67 +426,81 @@ function buildWeeks() {
           isMonday: true, isDoctorDidi: true,
           episode: doctorDidiEp++,
           title: `Doctor Didi Episode ${doctorDidiEp - 1}`,
-          script: '', visual: '', reference: '', assignedTo: '', status: 'Idea', deadline: dateStr
+          script: '', visual: '', reference: '', assignedTo: '',
+          status: 'Idea', deadline: dateStr
         });
-        // extra blank Monday slot
         rows.push({
           id: uid(), date: dateStr, day: dayName,
           isMonday: true, isDoctorDidi: false,
-          title: '', script: '', visual: '', reference: '', assignedTo: '', status: 'Idea', deadline: dateStr
+          title: '', script: '', visual: '', reference: '', assignedTo: '',
+          status: 'Idea', deadline: dateStr
         });
-      } else if (d < 6) { // Tue–Sat only
+      } else if (d < 6) { // Tue–Sat
         rows.push({
           id: uid(), date: dateStr, day: dayName,
           isMonday: false, isDoctorDidi: false,
-          title: '', script: '', visual: '', reference: '', assignedTo: '', status: 'Idea', deadline: dateStr
+          title: '', script: '', visual: '', reference: '', assignedTo: '',
+          status: 'Idea', deadline: dateStr
         });
       }
     }
-    weeks.push({ weekNum: w + 1, rows });
+    result.push({ weekNum: w + 1, rows });
   }
-  return weeks;
+  return result;
 }
- 
-let weeks = buildWeeks();
  
 function uid() { return Math.random().toString(36).slice(2, 9); }
  
-// ─── RENDER ───────────────────────────────────────────────────────────────────
-const MONTH_AT_WEEK = { 1:'May 2025', 5:'June 2025', 9:'July 2025', 13:'August 2025', 17:'September 2025' };
+// ─── Month separators (auto-computed from START date) ─────────────────────────
+function getMonthAtWeek() {
+  const map = {};
+  let lastMonth = -1;
+  for (let w = 0; w < weeks.length; w++) {
+    const d = new Date(START);
+    d.setDate(START.getDate() + w * 7);
+    const m = d.getMonth();
+    const y = d.getFullYear();
+    if (m !== lastMonth) {
+      const label = d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+      map[w + 1] = label;
+      lastMonth = m;
+    }
+  }
+  return map;
+}
  
+// ─── Render ───────────────────────────────────────────────────────────────────
 function renderAll() {
   const cal = document.getElementById('calendar');
   cal.innerHTML = '';
+  const monthMap = getMonthAtWeek();
  
   weeks.forEach((week, wi) => {
-    // Month separator
-    if (MONTH_AT_WEEK[week.weekNum]) {
+    if (monthMap[week.weekNum]) {
       const sep = document.createElement('div');
       sep.className = 'month-sep';
-      sep.innerHTML = `<div class="month-line"></div><div class="month-name">${MONTH_AT_WEEK[week.weekNum]}</div><div class="month-line"></div>`;
+      sep.innerHTML = `<div class="month-line"></div>
+        <div class="month-name">${monthMap[week.weekNum]}</div>
+        <div class="month-line"></div>`;
       cal.appendChild(sep);
     }
  
     const block = document.createElement('div');
     block.className = 'week-block';
     block.id = 'week-' + week.weekNum;
- 
     block.innerHTML = `
       <div class="week-header">
         <span class="week-label">Week ${week.weekNum}</span>
         <span class="week-title">${weekDateRange(week)}</span>
         <div class="week-divider"></div>
-        <button class="btn-add-row" onclick="addRow(${wi})">+ Add Post</button>
+        <button class="btn-add-row" onclick="window._addRow(${wi})">+ Add Post</button>
       </div>
       <div class="cards-list" id="cards-${wi}"></div>
     `;
     cal.appendChild(block);
  
     const list = block.querySelector(`#cards-${wi}`);
-    week.rows.forEach((row, ri) => {
-      list.appendChild(buildCard(row, wi, ri));
-    });
-    // trailing blank row
+    week.rows.forEach((row, ri) => list.appendChild(buildCard(row, wi, ri)));
     list.appendChild(buildBlankRow(wi));
   });
  
@@ -458,57 +523,66 @@ function buildCard(row, wi, ri) {
     <div class="card-topbar">
       <div class="field-date-day">
         <input class="inp-date" type="text" value="${row.date}" placeholder="DD Mon YYYY"
-          oninput="updateField('${row.id}','date',this.value)" />
+          oninput="window._updateField('${row.id}','date',this.value)" />
         <input class="inp-day" type="text" value="${row.day}" placeholder="Day"
-          oninput="updateField('${row.id}','day',this.value)" />
+          oninput="window._updateField('${row.id}','day',this.value)" />
       </div>
-      ${row.isDoctorDidi ? `<span class="monday-badge">🎬 Doctor Didi Ep. ${row.episode}</span>` : ''}
-      ${row.isMonday && !row.isDoctorDidi ? `<span class="monday-badge" style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0">📌 Monday Extra</span>` : ''}
+      ${row.isDoctorDidi
+        ? `<span class="monday-badge">🎬 Doctor Didi Ep. ${row.episode}</span>`
+        : ''}
+      ${row.isMonday && !row.isDoctorDidi
+        ? `<span class="monday-badge" style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0">📌 Monday Extra</span>`
+        : ''}
       <div class="spacer"></div>
       <span class="deadline-label">Deadline:</span>
       <input class="inp-deadline" type="text" value="${row.deadline}" placeholder="DD Mon YYYY"
-        oninput="updateField('${row.id}','deadline',this.value)" />
-      <select class="status-select" onchange="updateField('${row.id}','status',this.value); styleStatus(this)">
+        oninput="window._updateField('${row.id}','deadline',this.value)" />
+      <select class="status-select"
+        onchange="window._updateField('${row.id}','status',this.value); window._styleStatus(this)">
         ${['Idea','Script Ready','Shooting','Editing','Posted'].map(s =>
-          `<option value="${s}" ${row.status===s?'selected':''}>${s}</option>`
+          `<option value="${s}" ${row.status === s ? 'selected' : ''}>${s}</option>`
         ).join('')}
       </select>
-      <button class="btn-icon" title="Duplicate" onclick="duplicateRow('${row.id}',${wi},${ri})">⧉</button>
-      <button class="btn-icon del" title="Delete" onclick="deleteRow('${row.id}',${wi})">✕</button>
+      <button class="btn-icon" title="Duplicate"
+        onclick="window._duplicateRow('${row.id}',${wi},${ri})">⧉</button>
+      <button class="btn-icon del" title="Delete"
+        onclick="window._deleteRow('${row.id}',${wi})">✕</button>
     </div>
     <div class="card-body">
       <div class="field-block">
         <div class="field-label">Title / Hook</div>
-        <input class="inp-text" type="text" value="${esc(row.title)}" placeholder="Write an attention-grabbing hook…"
-          oninput="updateField('${row.id}','title',this.value)" />
+        <input class="inp-text" type="text" value="${esc(row.title)}"
+          placeholder="Write an attention-grabbing hook…"
+          oninput="window._updateField('${row.id}','title',this.value)" />
       </div>
       <div class="field-block field-script">
         <div class="field-label">Script / Caption</div>
         <textarea class="inp-area" placeholder="Full script or caption body goes here…"
-          oninput="updateField('${row.id}','script',this.value)">${esc(row.script)}</textarea>
+          oninput="window._updateField('${row.id}','script',this.value)">${esc(row.script)}</textarea>
       </div>
       <div class="field-block">
         <div class="field-label">Visual Direction</div>
-        <input class="inp-text" type="text" value="${esc(row.visual)}" placeholder="Shot type, colours, props…"
-          oninput="updateField('${row.id}','visual',this.value)" />
+        <input class="inp-text" type="text" value="${esc(row.visual)}"
+          placeholder="Shot type, colours, props…"
+          oninput="window._updateField('${row.id}','visual',this.value)" />
       </div>
       <div class="field-block">
         <div class="field-label">Reference</div>
-        <input class="inp-text" type="text" value="${esc(row.reference)}" placeholder="Link or inspo…"
-          oninput="updateField('${row.id}','reference',this.value)" />
+        <input class="inp-text" type="text" value="${esc(row.reference)}"
+          placeholder="Link or inspo…"
+          oninput="window._updateField('${row.id}','reference',this.value)" />
       </div>
       <div class="field-block">
         <div class="field-label">Assigned To</div>
-        <input class="inp-text" type="text" value="${esc(row.assignedTo)}" placeholder="Team member…"
-          oninput="updateField('${row.id}','assignedTo',this.value)" />
+        <input class="inp-text" type="text" value="${esc(row.assignedTo)}"
+          placeholder="Team member…"
+          oninput="window._updateField('${row.id}','assignedTo',this.value)" />
       </div>
     </div>
   `;
  
-  // Style status select on load
   const sel = card.querySelector('.status-select');
   styleStatus(sel);
- 
   return card;
 }
  
@@ -518,11 +592,12 @@ function buildBlankRow(wi) {
   div.style.cursor = 'pointer';
   div.title = 'Click to add a new post';
   div.innerHTML = `
-    <div class="card-topbar" style="justify-content:center;padding:14px;color:var(--text-muted);font-size:13px;gap:6px;">
+    <div class="card-topbar"
+      style="justify-content:center;padding:14px;color:var(--text-muted);font-size:13px;gap:6px;">
       <span>＋</span><span>Add new post to this week</span>
     </div>
   `;
-  div.onclick = () => addRow(wi);
+  div.onclick = () => window._addRow(wi);
   return div;
 }
  
@@ -531,21 +606,26 @@ function esc(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
  
-// ─── INTERACTIONS ─────────────────────────────────────────────────────────────
+// ─── Interactions ─────────────────────────────────────────────────────────────
 function updateField(id, field, val) {
-  const week = weeks.find(w => w.rows.find(r => r.id === id));
-  if (!week) return;
-  const row = week.rows.find(r => r.id === id);
-  if (row) { row[field] = val; updateStats(); }
+  for (let i = 0; i < weeks.length; i++) {
+    const row = weeks[i].rows.find(r => r.id === id);
+    if (row) {
+      row[field] = val;
+      updateStats();
+      saveToFirebase(i);
+      return;
+    }
+  }
 }
  
 function styleStatus(sel) {
   const map = {
-    'Idea':        ['var(--s-idea)', 'var(--s-idea-t)'],
-    'Script Ready':['var(--s-script)', 'var(--s-script-t)'],
-    'Shooting':    ['var(--s-shooting)', 'var(--s-shooting-t)'],
-    'Editing':     ['var(--s-editing)', 'var(--s-editing-t)'],
-    'Posted':      ['var(--s-posted)', 'var(--s-posted-t)'],
+    'Idea':         ['var(--s-idea)',     'var(--s-idea-t)'],
+    'Script Ready': ['var(--s-script)',   'var(--s-script-t)'],
+    'Shooting':     ['var(--s-shooting)', 'var(--s-shooting-t)'],
+    'Editing':      ['var(--s-editing)',  'var(--s-editing-t)'],
+    'Posted':       ['var(--s-posted)',   'var(--s-posted-t)'],
   };
   const [bg, fg] = map[sel.value] || map['Idea'];
   sel.style.background = `${bg} url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 8px center`;
@@ -558,20 +638,27 @@ function duplicateRow(id, wi, ri) {
   const clone = Object.assign({}, row, { id: uid(), isDoctorDidi: false });
   weeks[wi].rows.splice(ri + 1, 0, clone);
   renderAll();
+  saveToFirebase(wi);
 }
  
 function deleteRow(id, wi) {
-  if (weeks[wi].rows.length <= 1) return alert('Cannot delete the only row in a week.');
+  if (weeks[wi].rows.length <= 1) {
+    alert('Cannot delete the only row in a week.');
+    return;
+  }
   weeks[wi].rows = weeks[wi].rows.filter(r => r.id !== id);
   renderAll();
+  saveToFirebase(wi);
 }
  
 function addRow(wi) {
   weeks[wi].rows.push({
     id: uid(), date: '', day: '', isMonday: false, isDoctorDidi: false,
-    title: '', script: '', visual: '', reference: '', assignedTo: '', status: 'Idea', deadline: ''
+    title: '', script: '', visual: '', reference: '', assignedTo: '',
+    status: 'Idea', deadline: ''
   });
   renderAll();
+  saveToFirebase(wi);
   setTimeout(() => {
     const list = document.getElementById('cards-' + wi);
     if (list) list.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -586,27 +673,47 @@ function addWeekBlock() {
   weeks.push({
     weekNum: newWeekNum,
     rows: [{
-      id: uid(), date: dateStr, day: 'Monday', isMonday: true, isDoctorDidi: false,
-      title: '', script: '', visual: '', reference: '', assignedTo: '', status: 'Idea', deadline: dateStr
+      id: uid(), date: dateStr, day: 'Monday',
+      isMonday: true, isDoctorDidi: false,
+      title: '', script: '', visual: '', reference: '', assignedTo: '',
+      status: 'Idea', deadline: dateStr
     }]
   });
   renderAll();
+  saveToFirebase(weeks.length - 1);
   setTimeout(() => document.getElementById('week-' + newWeekNum)?.scrollIntoView({ behavior: 'smooth' }), 50);
 }
  
-// ─── STATS ────────────────────────────────────────────────────────────────────
+// ─── Stats ────────────────────────────────────────────────────────────────────
 function updateStats() {
   const all = weeks.flatMap(w => w.rows);
-  document.getElementById('stat-total').textContent   = all.length;
-  document.getElementById('stat-posted').textContent  = all.filter(r => r.status === 'Posted').length;
-  document.getElementById('stat-editing').textContent = all.filter(r => r.status === 'Editing').length;
-  document.getElementById('stat-shooting').textContent= all.filter(r => r.status === 'Shooting').length;
-  document.getElementById('stat-ideas').textContent   = all.filter(r => r.status === 'Idea').length;
+  document.getElementById('stat-total').textContent    = all.length;
+  document.getElementById('stat-posted').textContent   = all.filter(r => r.status === 'Posted').length;
+  document.getElementById('stat-editing').textContent  = all.filter(r => r.status === 'Editing').length;
+  document.getElementById('stat-shooting').textContent = all.filter(r => r.status === 'Shooting').length;
+  document.getElementById('stat-ideas').textContent    = all.filter(r => r.status === 'Idea').length;
 }
  
-// ─── INIT ─────────────────────────────────────────────────────────────────────
-renderAll();
-updateHeaderBadge();
+function updateHeaderBadge() {
+  const options = { day: '2-digit', month: 'short', year: 'numeric' };
+  const formatted = START.toLocaleDateString('en-GB', options);
+  const months = Math.round((weeks.length * 7) / 30);
+  document.getElementById('header-badge').textContent =
+    `📅 Week 1 – ${formatted} · ${months} Months`;
+}
+ 
+// ─── Expose to inline onclick handlers ───────────────────────────────────────
+// (ES modules don't pollute global scope, so we attach helpers to window)
+window._updateField  = updateField;
+window._styleStatus  = styleStatus;
+window._duplicateRow = duplicateRow;
+window._deleteRow    = deleteRow;
+window._addRow       = addRow;
+window.addWeekBlock  = addWeekBlock;
+ 
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+console.log("🚀 Module loaded — starting boot");
+loadFromFirebase();
 </script>
 </body>
 </html>
