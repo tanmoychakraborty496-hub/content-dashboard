@@ -33,31 +33,21 @@
     --s-editing: #dbeafe; --s-editing-t: #1e40af;
     --s-posted: #d1fae5; --s-posted-t: #065f46;
  
-    /* Day colours */
-    --day-mon-bg: #fffbeb; --day-mon-border: #f59e0b; --day-mon-badge: #fef3c7; --day-mon-t: #92400e;
-    --day-tue-bg: #fdf2f8; --day-tue-border: #ec4899; --day-tue-badge: #fce7f3; --day-tue-t: #9d174d;
-    --day-wed-bg: #eff6ff; --day-wed-border: #3b82f6; --day-wed-badge: #dbeafe; --day-wed-t: #1e40af;
-    --day-thu-bg: #fff7ed; --day-thu-border: #f97316; --day-thu-badge: #ffedd5; --day-thu-t: #9a3412;
-    --day-fri-bg: #f0fdf4; --day-fri-border: #22c55e; --day-fri-badge: #dcfce7; --day-fri-t: #14532d;
-    --day-sat-bg: #faf5ff; --day-sat-border: #a855f7; --day-sat-badge: #f3e8ff; --day-sat-t: #581c87;
+    --day-mon-bg: #fffbeb; --day-mon-border: #f59e0b;
+    --day-tue-bg: #fdf2f8; --day-tue-border: #ec4899;
+    --day-wed-bg: #eff6ff; --day-wed-border: #3b82f6;
+    --day-thu-bg: #fff7ed; --day-thu-border: #f97316;
+    --day-fri-bg: #f0fdf4; --day-fri-border: #22c55e;
+    --day-sat-bg: #faf5ff; --day-sat-border: #a855f7;
   }
  
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text-primary);
-    min-height: 100vh;
-    padding: 0;
-  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; padding: 0; }
  
   .header {
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 0 32px;
-    position: sticky; top: 0; z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 32px; position: sticky; top: 0; z-index: 100;
     display: flex; align-items: center; justify-content: space-between;
-    height: 64px;
-    box-shadow: var(--shadow);
+    height: 64px; box-shadow: var(--shadow);
   }
   .header-brand { display: flex; align-items: center; gap: 12px; }
   .brand-mark {
@@ -71,79 +61,51 @@
   .header-meta { display: flex; align-items: center; gap: 16px; }
   .header-badge {
     background: var(--accent-light); color: var(--accent);
-    border: 1px solid var(--accent-mid);
-    font-size: 12px; font-weight: 500;
+    border: 1px solid var(--accent-mid); font-size: 12px; font-weight: 500;
     padding: 4px 10px; border-radius: 99px;
   }
   .btn-add-week {
-    background: var(--accent); color: #fff;
-    border: none; cursor: pointer;
-    padding: 7px 16px; border-radius: 7px;
-    font-family: inherit; font-size: 13px; font-weight: 500;
-    transition: background .15s;
+    background: var(--accent); color: #fff; border: none; cursor: pointer;
+    padding: 7px 16px; border-radius: 7px; font-family: inherit;
+    font-size: 13px; font-weight: 500; transition: background .15s;
   }
   .btn-add-week:hover { background: #0c6880; }
  
-  /* Loading overlay */
   #loading-overlay {
-    position: fixed; inset: 0; z-index: 9999;
-    background: var(--bg);
+    position: fixed; inset: 0; z-index: 9999; background: var(--bg);
     display: flex; align-items: center; justify-content: center;
-    flex-direction: column; gap: 12px;
-    font-size: 14px; color: var(--text-secondary);
+    flex-direction: column; gap: 12px; font-size: 14px; color: var(--text-secondary);
   }
   #loading-overlay .spinner {
     width: 32px; height: 32px; border-radius: 50%;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
+    border: 3px solid var(--border); border-top-color: var(--accent);
     animation: spin .7s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
  
   .main { padding: 28px 32px 80px; max-width: 1440px; margin: 0 auto; }
- 
   .week-block { margin-bottom: 36px; }
-  .week-header {
-    display: flex; align-items: center; gap: 12px;
-    margin-bottom: 12px;
-  }
-  .week-label {
-    font-size: 11px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: .08em;
-    color: var(--text-muted);
-    white-space: nowrap;
-  }
-  .week-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 18px; color: var(--text-primary);
-  }
+  .week-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .week-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); white-space: nowrap; }
+  .week-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--text-primary); }
   .week-divider { flex: 1; height: 1px; background: var(--border); }
   .btn-add-row {
     font-family: inherit; font-size: 12px; font-weight: 500;
     color: var(--accent); background: var(--accent-light);
     border: 1px solid var(--accent-mid); border-radius: 6px;
-    padding: 4px 12px; cursor: pointer; transition: all .15s;
-    white-space: nowrap;
+    padding: 4px 12px; cursor: pointer; transition: all .15s; white-space: nowrap;
   }
   .btn-add-row:hover { background: var(--accent-mid); }
  
   .cards-list { display: flex; flex-direction: column; gap: 8px; }
  
   .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow-card);
-    overflow: hidden;
-    transition: box-shadow .15s;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); box-shadow: var(--shadow-card);
+    overflow: hidden; transition: box-shadow .15s;
   }
   .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.09); }
-  .card.is-monday {
-    background: var(--monday-stripe);
-    border-left: 3px solid var(--monday-accent);
-  }
  
-  /* Day-coloured left border */
   .card.day-mon { background: var(--day-mon-bg); border-left: 3px solid var(--day-mon-border); }
   .card.day-tue { background: var(--day-tue-bg); border-left: 3px solid var(--day-tue-border); }
   .card.day-wed { background: var(--day-wed-bg); border-left: 3px solid var(--day-wed-border); }
@@ -151,131 +113,100 @@
   .card.day-fri { background: var(--day-fri-bg); border-left: 3px solid var(--day-fri-border); }
   .card.day-sat { background: var(--day-sat-bg); border-left: 3px solid var(--day-sat-border); }
  
-  /* Published state */
   .card.is-published { opacity: 0.72; }
   .card.is-published .card-body { position: relative; }
   .card.is-published .card-body::after {
     content: ''; position: absolute; inset: 0;
-    background: rgba(209,250,229,0.45);
-    pointer-events: none; border-radius: 0 0 var(--radius) var(--radius);
+    background: rgba(209,250,229,0.45); pointer-events: none;
+    border-radius: 0 0 var(--radius) var(--radius);
   }
   .card.is-published .inp-text,
   .card.is-published .inp-area,
   .card.is-published .inp-date,
   .card.is-published .inp-day { text-decoration: line-through; color: var(--text-muted); }
  
-  /* Published checkbox button */
   .btn-publish {
-    background: none; border: 1.5px solid var(--border);
-    border-radius: 6px; width: 28px; height: 28px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    font-size: 14px; transition: all .15s; color: var(--text-muted);
-    flex-shrink: 0;
+    background: none; border: 1.5px solid var(--border); border-radius: 6px;
+    width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; font-size: 14px; transition: all .15s;
+    color: var(--text-muted); flex-shrink: 0;
   }
   .btn-publish:hover { background: #d1fae5; border-color: #22c55e; color: #15803d; }
   .btn-publish.active { background: #d1fae5; border-color: #22c55e; color: #15803d; }
   .published-badge {
     display: inline-flex; align-items: center; gap: 4px;
-    background: #d1fae5; color: #065f46;
-    font-size: 11px; font-weight: 600;
-    padding: 3px 10px; border-radius: 99px;
-    border: 1px solid #6ee7b7;
+    background: #d1fae5; color: #065f46; font-size: 11px; font-weight: 600;
+    padding: 3px 10px; border-radius: 99px; border: 1px solid #6ee7b7;
   }
  
   .card-topbar {
     display: flex; align-items: center; gap: 10px;
-    padding: 10px 14px 8px;
-    border-bottom: 1px solid var(--border-light);
-    flex-wrap: wrap;
+    padding: 10px 14px 8px; border-bottom: 1px solid var(--border-light); flex-wrap: wrap;
   }
   .field-date-day { display: flex; gap: 6px; align-items: center; }
   .inp-date, .inp-day {
     font-family: inherit; font-size: 12px; font-weight: 500;
-    border: 1px solid transparent; border-radius: 5px;
-    padding: 3px 6px; background: transparent;
-    color: var(--text-secondary);
-    transition: border-color .15s, background .15s;
-    outline: none;
+    border: 1px solid transparent; border-radius: 5px; padding: 3px 6px;
+    background: transparent; color: var(--text-secondary);
+    transition: border-color .15s, background .15s; outline: none;
   }
   .inp-date { width: 110px; }
   .inp-day  { width: 90px; }
-  .inp-date:focus, .inp-day:focus {
-    border-color: var(--border); background: #fff;
-  }
+  .inp-date:focus, .inp-day:focus { border-color: var(--border); background: #fff; }
  
   .monday-badge {
     display: inline-flex; align-items: center; gap: 5px;
-    background: var(--monday-badge);
-    color: var(--monday-accent);
-    font-size: 11px; font-weight: 600;
-    padding: 3px 10px; border-radius: 99px;
-    letter-spacing: .02em;
-    border: 1px solid #fde68a;
+    background: var(--monday-badge); color: var(--monday-accent);
+    font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 99px;
+    letter-spacing: .02em; border: 1px solid #fde68a;
   }
- 
   .card-topbar .spacer { flex: 1; }
  
   .status-select {
     font-family: inherit; font-size: 12px; font-weight: 500;
-    border: 1px solid var(--border); border-radius: 6px;
-    padding: 4px 10px; background: var(--s-idea); color: var(--s-idea-t);
-    cursor: pointer; outline: none; appearance: none;
-    -webkit-appearance: none;
+    border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px;
+    background: var(--s-idea); color: var(--s-idea-t);
+    cursor: pointer; outline: none; appearance: none; -webkit-appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
     background-repeat: no-repeat; background-position: right 8px center;
-    padding-right: 26px;
-    transition: all .15s;
+    padding-right: 26px; transition: all .15s;
   }
   .status-select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-mid); }
  
   .inp-deadline {
-    font-family: inherit; font-size: 12px;
-    border: 1px solid transparent; border-radius: 5px;
-    padding: 3px 8px; background: transparent;
-    color: var(--text-secondary); outline: none;
-    width: 116px;
+    font-family: inherit; font-size: 12px; border: 1px solid transparent;
+    border-radius: 5px; padding: 3px 8px; background: transparent;
+    color: var(--text-secondary); outline: none; width: 116px;
     transition: border-color .15s, background .15s;
   }
   .inp-deadline:focus { border-color: var(--border); background: #fff; }
   .deadline-label { font-size: 11px; color: var(--text-muted); }
  
   .btn-icon {
-    background: none; border: 1px solid var(--border);
-    border-radius: 6px; width: 28px; height: 28px;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    font-size: 14px; transition: all .15s; color: var(--text-secondary);
-    flex-shrink: 0;
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; font-size: 14px; transition: all .15s;
+    color: var(--text-secondary); flex-shrink: 0;
   }
   .btn-icon:hover { background: var(--bg); border-color: var(--text-secondary); }
   .btn-icon.del:hover { background: #fee2e2; border-color: #f87171; color: #dc2626; }
  
-  .card-body {
-    display: grid;
-    grid-template-columns: 2fr 3fr 2fr 1.5fr 1.5fr;
-    gap: 0;
-  }
+  .card-body { display: grid; grid-template-columns: 2fr 3fr 2fr 1.5fr 1.5fr; gap: 0; }
   @media (max-width: 1100px) {
     .card-body { grid-template-columns: 1fr 1fr; }
     .field-script { grid-column: 1 / -1; }
   }
  
   .field-block {
-    padding: 10px 14px;
-    border-right: 1px solid var(--border-light);
+    padding: 10px 14px; border-right: 1px solid var(--border-light);
     display: flex; flex-direction: column; gap: 4px;
   }
   .field-block:last-child { border-right: none; }
- 
-  .field-label {
-    font-size: 10px; font-weight: 600;
-    text-transform: uppercase; letter-spacing: .07em;
-    color: var(--text-muted);
-  }
+  .field-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); }
  
   .inp-text {
-    font-family: inherit; font-size: 13px;
-    border: 1px solid transparent; border-radius: 5px;
-    padding: 4px 6px; background: transparent;
+    font-family: inherit; font-size: 13px; border: 1px solid transparent;
+    border-radius: 5px; padding: 4px 6px; background: transparent;
     color: var(--text-primary); outline: none; width: 100%;
     transition: border-color .15s, background .15s;
   }
@@ -283,44 +214,33 @@
   .inp-text::placeholder { color: var(--text-muted); }
  
   .inp-area {
-    font-family: inherit; font-size: 13px;
-    border: 1px solid transparent; border-radius: 5px;
-    padding: 4px 6px; background: transparent;
-    color: var(--text-primary); outline: none;
-    width: 100%; resize: vertical; min-height: 70px;
-    transition: border-color .15s, background .15s;
-    line-height: 1.5;
+    font-family: inherit; font-size: 13px; border: 1px solid transparent;
+    border-radius: 5px; padding: 4px 6px; background: transparent;
+    color: var(--text-primary); outline: none; width: 100%;
+    resize: vertical; min-height: 70px;
+    transition: border-color .15s, background .15s; line-height: 1.5;
   }
   .inp-area:focus { border-color: var(--border); background: #fff; }
   .inp-area::placeholder { color: var(--text-muted); }
  
-  .card.blank-row .card-body * { opacity: .5; }
   .card.blank-row { border-style: dashed; background: #fafafa; }
+  .card.blank-row .card-body * { opacity: .5; }
  
-  .stats-bar {
-    display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap;
-  }
+  .stats-bar { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
   .stat-pill {
     background: var(--surface); border: 1px solid var(--border);
     border-radius: 8px; padding: 10px 16px;
     display: flex; flex-direction: column; gap: 2px;
-    min-width: 110px;
-    box-shadow: var(--shadow);
+    min-width: 110px; box-shadow: var(--shadow);
   }
   .stat-val { font-size: 20px; font-weight: 600; color: var(--text-primary); }
   .stat-lbl { font-size: 11px; color: var(--text-muted); }
  
-  .month-sep {
-    display: flex; align-items: center; gap: 12px;
-    margin: 36px 0 20px;
-  }
+  .month-sep { display: flex; align-items: center; gap: 12px; margin: 36px 0 20px; }
   .month-name {
-    font-family: 'DM Serif Display', serif;
-    font-size: 13px; color: var(--accent);
-    background: var(--accent-light);
-    border: 1px solid var(--accent-mid);
-    padding: 4px 14px; border-radius: 99px;
-    white-space: nowrap;
+    font-family: 'DM Serif Display', serif; font-size: 13px; color: var(--accent);
+    background: var(--accent-light); border: 1px solid var(--accent-mid);
+    padding: 4px 14px; border-radius: 99px; white-space: nowrap;
   }
   .month-line { flex: 1; height: 1px; background: var(--border); }
  
@@ -331,7 +251,6 @@
 </head>
 <body>
  
-<!-- Loading overlay — hidden once Firebase data loads -->
 <div id="loading-overlay">
   <div class="spinner"></div>
   <span>Loading calendar…</span>
@@ -362,18 +281,12 @@
   <div id="calendar"></div>
 </div>
  
-<!-- ═══════════════════════════════════════════════════════════════
-     SINGLE MODULE SCRIPT — Firebase + all app logic live here
-     so db, saveToFirebase, loadFromFirebase share the same scope.
-     Global helpers (addWeekBlock, addRow, etc.) are attached to
-     window so inline onclick="" attributes can reach them.
-════════════════════════════════════════════════════════════════ -->
 <script type="module">
-import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-import { getFirestore, collection, onSnapshot, setDoc, deleteDoc, doc }
-                            from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+import { getFirestore, collection, onSnapshot, setDoc, getDocs, deleteDoc, doc }
+  from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
  
-// ─── Firebase init ────────────────────────────────────────────────────────────
+// ── Firebase ──────────────────────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyB6GM8wcPKCubD6q3SqU9dTz8d9fd26FKc",
   authDomain: "content-dashboard-9e60c.firebaseapp.com",
@@ -385,74 +298,91 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
  
-// ─── Constants ────────────────────────────────────────────────────────────────
-const START = new Date(2026, 3, 21); // 21 Apr 2026
-// Set true once to wipe + rebuild Firestore with new 3-cards-per-day structure.
-// After confirming it works, set back to false and redeploy.
-const FORCE_RESET = true;
+// ── Constants ─────────────────────────────────────────────────────────────────
+const START = new Date(2026, 3, 21); // 21 Apr 2026 (Tuesday)
  
-// ─── State ────────────────────────────────────────────────────────────────────
+// FORCE_RESET: set true ONCE to wipe + rebuild, then immediately set back to false.
+// ⚠️ Leaving this true will wipe all data on every page load.
+const FORCE_RESET = false;
+ 
+// ── State ─────────────────────────────────────────────────────────────────────
 let weeks = [];
  
-// ─── Firebase persistence ─────────────────────────────────────────────────────
-// Debounce saves — only writes the changed week, not all 20.
+// ── Save (debounced, per-week) ────────────────────────────────────────────────
 let _saveTimer = null;
 const _dirtyWeeks = new Set();
+let _localEditInFlight = false;
+let _pendingRemoteSnapshot = null;
  
 function saveToFirebase(weekIndex) {
   if (weekIndex !== undefined) _dirtyWeeks.add(weekIndex);
   clearTimeout(_saveTimer);
   _saveTimer = setTimeout(async () => {
+    _localEditInFlight = true;
     const toSave = _dirtyWeeks.size > 0 ? [..._dirtyWeeks] : weeks.map((_, i) => i);
     _dirtyWeeks.clear();
     try {
       for (const i of toSave) {
         if (weeks[i]) await setDoc(doc(db, "calendar", "week-" + i), weeks[i]);
       }
-    } catch (e) { /* silent — user edits still held in memory */ }
+    } catch (_) {
+      // Silent — edits held in memory
+    } finally {
+      _localEditInFlight = false;
+      if (_pendingRemoteSnapshot) {
+        applyRemoteSnapshot(_pendingRemoteSnapshot);
+        _pendingRemoteSnapshot = null;
+      }
+    }
   }, 800);
 }
  
-// ─── Real-time listener ───────────────────────────────────────────────────────
-// onSnapshot fires immediately on load (replaces getDocs) AND whenever any
-// collaborator saves a change — all open tabs update automatically.
+// ── Real-time sync ────────────────────────────────────────────────────────────
 let _firstSnapshot = true;
+let _resetDone = false;
  
 function startRealtimeSync() {
   onSnapshot(collection(db, "calendar"), async (snapshot) => {
-    // While the local user is actively typing, skip remote updates
-    // to avoid cursor-jumping. _saveTimer being set means a save is pending.
-    if (!_firstSnapshot && _saveTimer) return;
- 
-    const loaded = [];
-    snapshot.forEach(d => loaded.push(d.data()));
- 
-    if (FORCE_RESET || loaded.length === 0) {
-      // Wipe old data and rebuild with new structure
-      for (let i = 0; i < Math.max(loaded.length, 25); i++) {
-        try { await deleteDoc(doc(db, "calendar", "week-" + i)); } catch(_) {}
-      }
-      weeks = buildWeeks();
-      for (let i = 0; i < weeks.length; i++) {
-        await setDoc(doc(db, "calendar", "week-" + i), weeks[i]);
-      }
-    } else {
-      loaded.sort((a, b) => (a.weekNum || 0) - (b.weekNum || 0));
-      weeks = loaded;
-    }
  
     if (_firstSnapshot) {
-      // First load: render + hide overlay
       _firstSnapshot = false;
+      const loaded = [];
+      snapshot.forEach(d => loaded.push(d.data()));
+ 
+      if (FORCE_RESET && !_resetDone) {
+        _resetDone = true;
+        const allDocs = await getDocs(collection(db, "calendar"));
+        for (const d of allDocs.docs) {
+          try { await deleteDoc(doc(db, "calendar", d.id)); } catch (_) {}
+        }
+        weeks = buildWeeks();
+        for (let i = 0; i < weeks.length; i++) {
+          await setDoc(doc(db, "calendar", "week-" + i), weeks[i]);
+        }
+      } else if (loaded.length === 0) {
+        weeks = buildWeeks();
+        for (let i = 0; i < weeks.length; i++) {
+          await setDoc(doc(db, "calendar", "week-" + i), weeks[i]);
+        }
+      } else {
+        loaded.sort((a, b) => (a.weekNum || 0) - (b.weekNum || 0));
+        weeks = loaded;
+      }
+ 
       document.getElementById('loading-overlay').style.display = 'none';
       renderAll();
       updateHeaderBadge();
+ 
     } else {
-      // Subsequent updates from other collaborators: re-render silently
-      renderAll();
+      // Remote update from collaborator — queue if local save in flight
+      if (_localEditInFlight || _saveTimer) {
+        _pendingRemoteSnapshot = snapshot;
+        return;
+      }
+      applyRemoteSnapshot(snapshot);
     }
-  }, (e) => {
-    // Firestore error fallback — render local data so app still works
+ 
+  }, () => {
     weeks = buildWeeks();
     document.getElementById('loading-overlay').style.display = 'none';
     renderAll();
@@ -460,15 +390,21 @@ function startRealtimeSync() {
   });
 }
  
-// ─── Data builder ─────────────────────────────────────────────────────────────
-// START = 21 Apr 2026 which is a TUESDAY.
-// Each "week" runs Tue–Mon (7 days), matching the real calendar.
-// Monday (d=6 in our loop) gets the Doctor Didi card.
-// Sun (d=6 of JS week) is skipped — only Tue–Sat + Mon publish days.
+function applyRemoteSnapshot(snapshot) {
+  const loaded = [];
+  snapshot.forEach(d => loaded.push(d.data()));
+  if (loaded.length === 0) return;
+  loaded.sort((a, b) => (a.weekNum || 0) - (b.weekNum || 0));
+  weeks = loaded;
+  renderAll();
+}
+ 
+// ── Data builder ──────────────────────────────────────────────────────────────
+// Week starts Tuesday (21 Apr 2026). Sunday skipped.
+// Monday: Doctor Didi card + 2 extras. Tue–Sat: 3 blank cards each.
 function buildWeeks() {
   const result = [];
-  let doctorDidiEp = 7;
-  // Day names in our loop order: start from Tuesday (JS day 2)
+  let ep = 7;
   const DAY_NAMES = ["Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday","Monday"];
  
   for (let w = 0; w < 20; w++) {
@@ -478,39 +414,24 @@ function buildWeeks() {
       date.setDate(START.getDate() + w * 7 + d);
       const dayName = DAY_NAMES[d];
       const dateStr = date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-      const isMonday = dayName === "Monday";
-      const isSunday = dayName === "Sunday";
  
-      if (isSunday) continue; // skip Sundays
+      if (dayName === "Sunday") continue;
  
-      if (isMonday) {
-        // Card 1 — Doctor Didi episode
-        rows.push({
-          id: uid(), date: dateStr, day: dayName,
-          isMonday: true, isDoctorDidi: true,
-          episode: doctorDidiEp++,
-          title: `Doctor Didi Episode ${doctorDidiEp - 1}`,
+      if (dayName === "Monday") {
+        rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: true, isDoctorDidi: true,
+          episode: ep++, title: `Doctor Didi Episode ${ep - 1}`,
           script: '', visual: '', reference: '', assignedTo: '',
-          status: 'Idea', deadline: dateStr, published: false
-        });
-        // Cards 2 & 3
+          status: 'Idea', deadline: dateStr, published: false });
         for (let s = 0; s < 2; s++) {
-          rows.push({
-            id: uid(), date: dateStr, day: dayName,
-            isMonday: true, isDoctorDidi: false,
+          rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: true, isDoctorDidi: false,
             title: '', script: '', visual: '', reference: '', assignedTo: '',
-            status: 'Idea', deadline: dateStr, published: false
-          });
+            status: 'Idea', deadline: dateStr, published: false });
         }
       } else {
-        // Tue–Sat — 3 blank cards
         for (let s = 0; s < 3; s++) {
-          rows.push({
-            id: uid(), date: dateStr, day: dayName,
-            isMonday: false, isDoctorDidi: false,
+          rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: false, isDoctorDidi: false,
             title: '', script: '', visual: '', reference: '', assignedTo: '',
-            status: 'Idea', deadline: dateStr, published: false
-          });
+            status: 'Idea', deadline: dateStr, published: false });
         }
       }
     }
@@ -521,7 +442,7 @@ function buildWeeks() {
  
 function uid() { return Math.random().toString(36).slice(2, 9); }
  
-// ─── Month separators (auto-computed from START date) ─────────────────────────
+// ── Month separators ──────────────────────────────────────────────────────────
 function getMonthAtWeek() {
   const map = {};
   let lastMonth = -1;
@@ -529,17 +450,15 @@ function getMonthAtWeek() {
     const d = new Date(START);
     d.setDate(START.getDate() + w * 7);
     const m = d.getMonth();
-    const y = d.getFullYear();
     if (m !== lastMonth) {
-      const label = d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
-      map[w + 1] = label;
+      map[w + 1] = d.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
       lastMonth = m;
     }
   }
   return map;
 }
  
-// ─── Render ───────────────────────────────────────────────────────────────────
+// ── Render ────────────────────────────────────────────────────────────────────
 function renderAll() {
   const cal = document.getElementById('calendar');
   cal.innerHTML = '';
@@ -565,8 +484,7 @@ function renderAll() {
         <div class="week-divider"></div>
         <button class="btn-add-row" onclick="window._addRow(${wi})">+ Add Post</button>
       </div>
-      <div class="cards-list" id="cards-${wi}"></div>
-    `;
+      <div class="cards-list" id="cards-${wi}"></div>`;
     cal.appendChild(block);
  
     const list = block.querySelector(`#cards-${wi}`);
@@ -578,10 +496,10 @@ function renderAll() {
 }
  
 function weekDateRange(week) {
-  const first = week.rows.find(r => r.date);
-  const last  = [...week.rows].reverse().find(r => r.date);
-  if (!first) return '';
-  return first.date + (last && last.date !== first.date ? ' — ' + last.date : '');
+  const rows = (week.rows || []).filter(r => r.date && r.date.trim());
+  if (!rows.length) return `Week ${week.weekNum}`;
+  const first = rows[0], last = rows[rows.length - 1];
+  return first.date + (last.date !== first.date ? ' — ' + last.date : '');
 }
  
 const DAY_CLASS = {
@@ -590,29 +508,23 @@ const DAY_CLASS = {
 };
  
 function buildCard(row, wi, ri) {
-  const dayClass = DAY_CLASS[row.day] || '';
-  const publishedClass = row.published ? ' is-published' : '';
   const card = document.createElement('div');
-  card.className = 'card ' + dayClass + publishedClass + (row.isBlank ? ' blank-row' : '');
+  card.className = 'card ' + (DAY_CLASS[row.day] || '') + (row.published ? ' is-published' : '');
   card.dataset.id = row.id;
  
   card.innerHTML = `
     <div class="card-topbar">
       <div class="field-date-day">
-        <input class="inp-date" type="text" value="${row.date}" placeholder="DD Mon YYYY"
+        <input class="inp-date" type="text" value="${esc(row.date)}" placeholder="DD Mon YYYY"
           oninput="window._updateField('${row.id}','date',this.value)" />
-        <input class="inp-day" type="text" value="${row.day}" placeholder="Day"
+        <input class="inp-day" type="text" value="${esc(row.day)}" placeholder="Day"
           oninput="window._updateField('${row.id}','day',this.value)" />
       </div>
-      ${row.isDoctorDidi
-        ? `<span class="monday-badge">🎬 Doctor Didi Ep. ${row.episode}</span>`
-        : ''}
-      ${row.isMonday && !row.isDoctorDidi
-        ? `<span class="monday-badge" style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0">📌 Monday Extra</span>`
-        : ''}
+      ${row.isDoctorDidi ? `<span class="monday-badge">🎬 Doctor Didi Ep. ${row.episode}</span>` : ''}
+      ${row.isMonday && !row.isDoctorDidi ? `<span class="monday-badge" style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0">📌 Monday Extra</span>` : ''}
       <div class="spacer"></div>
       <span class="deadline-label">Deadline:</span>
-      <input class="inp-deadline" type="text" value="${row.deadline}" placeholder="DD Mon YYYY"
+      <input class="inp-deadline" type="text" value="${esc(row.deadline)}" placeholder="DD Mon YYYY"
         oninput="window._updateField('${row.id}','deadline',this.value)" />
       <select class="status-select"
         onchange="window._updateField('${row.id}','status',this.value); window._styleStatus(this)">
@@ -623,16 +535,13 @@ function buildCard(row, wi, ri) {
       <button class="btn-publish ${row.published ? 'active' : ''}" title="Mark as Published"
         onclick="window._togglePublished('${row.id}',${wi})">✓</button>
       ${row.published ? '<span class="published-badge">✓ Published</span>' : ''}
-      <button class="btn-icon" title="Duplicate"
-        onclick="window._duplicateRow('${row.id}',${wi},${ri})">⧉</button>
-      <button class="btn-icon del" title="Delete"
-        onclick="window._deleteRow('${row.id}',${wi})">✕</button>
+      <button class="btn-icon" title="Duplicate" onclick="window._duplicateRow('${row.id}',${wi},${ri})">⧉</button>
+      <button class="btn-icon del" title="Delete" onclick="window._deleteRow('${row.id}',${wi})">✕</button>
     </div>
     <div class="card-body">
       <div class="field-block">
         <div class="field-label">Title / Hook</div>
-        <input class="inp-text" type="text" value="${esc(row.title)}"
-          placeholder="Write an attention-grabbing hook…"
+        <input class="inp-text" type="text" value="${esc(row.title)}" placeholder="Write an attention-grabbing hook…"
           oninput="window._updateField('${row.id}','title',this.value)" />
       </div>
       <div class="field-block field-script">
@@ -642,27 +551,22 @@ function buildCard(row, wi, ri) {
       </div>
       <div class="field-block">
         <div class="field-label">Visual Direction</div>
-        <input class="inp-text" type="text" value="${esc(row.visual)}"
-          placeholder="Shot type, colours, props…"
+        <input class="inp-text" type="text" value="${esc(row.visual)}" placeholder="Shot type, colours, props…"
           oninput="window._updateField('${row.id}','visual',this.value)" />
       </div>
       <div class="field-block">
         <div class="field-label">Reference</div>
-        <input class="inp-text" type="text" value="${esc(row.reference)}"
-          placeholder="Link or inspo…"
+        <input class="inp-text" type="text" value="${esc(row.reference)}" placeholder="Link or inspo…"
           oninput="window._updateField('${row.id}','reference',this.value)" />
       </div>
       <div class="field-block">
         <div class="field-label">Assigned To</div>
-        <input class="inp-text" type="text" value="${esc(row.assignedTo)}"
-          placeholder="Team member…"
+        <input class="inp-text" type="text" value="${esc(row.assignedTo)}" placeholder="Team member…"
           oninput="window._updateField('${row.id}','assignedTo',this.value)" />
       </div>
-    </div>
-  `;
+    </div>`;
  
-  const sel = card.querySelector('.status-select');
-  styleStatus(sel);
+  styleStatus(card.querySelector('.status-select'));
   return card;
 }
  
@@ -671,28 +575,23 @@ function buildBlankRow(wi) {
   div.className = 'card blank-row';
   div.style.cursor = 'pointer';
   div.title = 'Click to add a new post';
-  div.innerHTML = `
-    <div class="card-topbar"
-      style="justify-content:center;padding:14px;color:var(--text-muted);font-size:13px;gap:6px;">
-      <span>＋</span><span>Add new post to this week</span>
-    </div>
-  `;
+  div.innerHTML = `<div class="card-topbar" style="justify-content:center;padding:14px;color:var(--text-muted);font-size:13px;gap:6px;"><span>＋</span><span>Add new post to this week</span></div>`;
   div.onclick = () => window._addRow(wi);
   return div;
 }
  
 function esc(s) {
   if (!s) return '';
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
  
-// ─── Interactions ─────────────────────────────────────────────────────────────
+// ── Interactions ──────────────────────────────────────────────────────────────
 function updateField(id, field, val) {
   for (let i = 0; i < weeks.length; i++) {
     const row = weeks[i].rows.find(r => r.id === id);
     if (row) {
       row[field] = val;
-      updateStats();
+      if (field === 'status' || field === 'published') updateStats();
       saveToFirebase(i);
       return;
     }
@@ -701,11 +600,11 @@ function updateField(id, field, val) {
  
 function styleStatus(sel) {
   const map = {
-    'Idea':         ['var(--s-idea)',     'var(--s-idea-t)'],
-    'Script Ready': ['var(--s-script)',   'var(--s-script-t)'],
-    'Shooting':     ['var(--s-shooting)', 'var(--s-shooting-t)'],
-    'Editing':      ['var(--s-editing)',  'var(--s-editing-t)'],
-    'Posted':       ['var(--s-posted)',   'var(--s-posted-t)'],
+    'Idea':['var(--s-idea)','var(--s-idea-t)'],
+    'Script Ready':['var(--s-script)','var(--s-script-t)'],
+    'Shooting':['var(--s-shooting)','var(--s-shooting-t)'],
+    'Editing':['var(--s-editing)','var(--s-editing-t)'],
+    'Posted':['var(--s-posted)','var(--s-posted-t)'],
   };
   const [bg, fg] = map[sel.value] || map['Idea'];
   sel.style.background = `${bg} url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 8px center`;
@@ -715,17 +614,14 @@ function styleStatus(sel) {
 function duplicateRow(id, wi, ri) {
   const row = weeks[wi].rows.find(r => r.id === id);
   if (!row) return;
-  const clone = Object.assign({}, row, { id: uid(), isDoctorDidi: false });
+  const clone = Object.assign({}, row, { id: uid(), isDoctorDidi: false, published: false });
   weeks[wi].rows.splice(ri + 1, 0, clone);
   renderAll();
   saveToFirebase(wi);
 }
  
 function deleteRow(id, wi) {
-  if (weeks[wi].rows.length <= 1) {
-    alert('Cannot delete the only row in a week.');
-    return;
-  }
+  if (weeks[wi].rows.length <= 1) { alert('Cannot delete the only row in a week.'); return; }
   weeks[wi].rows = weeks[wi].rows.filter(r => r.id !== id);
   renderAll();
   saveToFirebase(wi);
@@ -741,67 +637,95 @@ function togglePublished(id, wi) {
 }
  
 function addRow(wi) {
+  const refRow = (weeks[wi].rows || []).find(r => r.date);
   weeks[wi].rows.push({
-    id: uid(), date: '', day: '', isMonday: false, isDoctorDidi: false,
+    id: uid(), date: refRow ? refRow.date : '', day: '',
+    isMonday: false, isDoctorDidi: false,
     title: '', script: '', visual: '', reference: '', assignedTo: '',
-    status: 'Idea', deadline: ''
+    status: 'Idea', deadline: refRow ? refRow.date : '', published: false
   });
   renderAll();
   saveToFirebase(wi);
   setTimeout(() => {
     const list = document.getElementById('cards-' + wi);
-    if (list) list.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    if (list) {
+      const children = list.children;
+      const target = children[children.length - 2] || children[children.length - 1];
+      target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }, 50);
 }
  
 function addWeekBlock() {
   const newWeekNum = weeks.length + 1;
-  const lastDate = new Date(START);
-  lastDate.setDate(START.getDate() + (newWeekNum - 1) * 7);
-  const dateStr = lastDate.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
-  weeks.push({
-    weekNum: newWeekNum,
-    rows: [{
-      id: uid(), date: dateStr, day: 'Monday',
-      isMonday: true, isDoctorDidi: false,
-      title: '', script: '', visual: '', reference: '', assignedTo: '',
-      status: 'Idea', deadline: dateStr
-    }]
-  });
+  const weekStart = new Date(START);
+  weekStart.setDate(START.getDate() + (newWeekNum - 1) * 7);
+  const DAY_NAMES = ["Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday","Monday"];
+  const rows = [];
+  const epNum = 7 + (newWeekNum - 1);
+ 
+  for (let d = 0; d < 7; d++) {
+    const date = new Date(weekStart);
+    date.setDate(weekStart.getDate() + d);
+    const dayName = DAY_NAMES[d];
+    const dateStr = date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+ 
+    if (dayName === "Sunday") continue;
+ 
+    if (dayName === "Monday") {
+      rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: true, isDoctorDidi: true,
+        episode: epNum, title: `Doctor Didi Episode ${epNum}`,
+        script: '', visual: '', reference: '', assignedTo: '',
+        status: 'Idea', deadline: dateStr, published: false });
+      for (let s = 0; s < 2; s++) {
+        rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: true, isDoctorDidi: false,
+          title: '', script: '', visual: '', reference: '', assignedTo: '',
+          status: 'Idea', deadline: dateStr, published: false });
+      }
+    } else {
+      for (let s = 0; s < 3; s++) {
+        rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: false, isDoctorDidi: false,
+          title: '', script: '', visual: '', reference: '', assignedTo: '',
+          status: 'Idea', deadline: dateStr, published: false });
+      }
+    }
+  }
+ 
+  weeks.push({ weekNum: newWeekNum, rows });
   renderAll();
   saveToFirebase(weeks.length - 1);
   setTimeout(() => document.getElementById('week-' + newWeekNum)?.scrollIntoView({ behavior: 'smooth' }), 50);
 }
  
-// ─── Stats ────────────────────────────────────────────────────────────────────
+// ── Stats ─────────────────────────────────────────────────────────────────────
 function updateStats() {
-  const all = weeks.flatMap(w => w.rows);
-  document.getElementById('stat-total').textContent    = all.length;
+  const isReal = r => (r.title || r.script || r.visual || r.assignedTo || '').trim() !== ''
+                   || r.status !== 'Idea' || r.published;
+  const all  = weeks.flatMap(w => w.rows || []);
+  const real = all.filter(isReal);
+  document.getElementById('stat-total').textContent    = real.length;
   document.getElementById('stat-posted').textContent   = all.filter(r => r.status === 'Posted').length;
   document.getElementById('stat-editing').textContent  = all.filter(r => r.status === 'Editing').length;
   document.getElementById('stat-shooting').textContent = all.filter(r => r.status === 'Shooting').length;
-  document.getElementById('stat-ideas').textContent    = all.filter(r => r.status === 'Idea').length;
+  document.getElementById('stat-ideas').textContent    = real.filter(r => r.status === 'Idea').length;
 }
  
 function updateHeaderBadge() {
-  const options = { day: '2-digit', month: 'short', year: 'numeric' };
-  const formatted = START.toLocaleDateString('en-GB', options);
+  const formatted = START.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
   const months = Math.round((weeks.length * 7) / 30);
-  document.getElementById('header-badge').textContent =
-    `📅 Week 1 – ${formatted} · ${months} Months`;
+  document.getElementById('header-badge').textContent = `📅 Week 1 – ${formatted} · ${months} Months`;
 }
  
-// ─── Expose to inline onclick handlers ───────────────────────────────────────
-// (ES modules don't pollute global scope, so we attach helpers to window)
-window._updateField  = updateField;
-window._styleStatus  = styleStatus;
-window._duplicateRow = duplicateRow;
-window._deleteRow        = deleteRow;
-window._togglePublished  = togglePublished;
-window._addRow       = addRow;
-window.addWeekBlock  = addWeekBlock;
+// ── Window exports ────────────────────────────────────────────────────────────
+window._updateField     = updateField;
+window._styleStatus     = styleStatus;
+window._duplicateRow    = duplicateRow;
+window._deleteRow       = deleteRow;
+window._togglePublished = togglePublished;
+window._addRow          = addRow;
+window.addWeekBlock     = addWeekBlock;
  
-// ─── Boot ─────────────────────────────────────────────────────────────────────
+// ── Boot ──────────────────────────────────────────────────────────────────────
 startRealtimeSync();
 </script>
 </body>
