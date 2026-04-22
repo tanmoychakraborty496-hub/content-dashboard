@@ -247,6 +247,46 @@
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+ 
+  /* ── PIN Modal ───────────────────────────────────────────────────────────── */
+  #pin-modal {
+    display: none; position: fixed; inset: 0; z-index: 99999;
+    background: rgba(0,0,0,0.45); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center;
+  }
+  #pin-modal.open { display: flex; }
+  .pin-box {
+    background: #fff; border-radius: 14px; padding: 32px 36px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+    min-width: 280px;
+  }
+  .pin-icon { font-size: 28px; }
+  .pin-title { font-size: 15px; font-weight: 700; color: #0f172a; }
+  .pin-sub { font-size: 12px; color: #94a3b8; margin-top: -8px; }
+  .pin-input {
+    font-family: inherit; font-size: 22px; font-weight: 700;
+    text-align: center; letter-spacing: 0.3em;
+    border: 2px solid #e2e8f0; border-radius: 8px;
+    padding: 10px 16px; width: 160px; outline: none;
+    transition: border-color .15s;
+  }
+  .pin-input:focus { border-color: #0e7490; }
+  .pin-input.error { border-color: #f87171; animation: shake .3s; }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)}
+  }
+  .pin-btns { display: flex; gap: 10px; width: 100%; }
+  .pin-btn {
+    flex: 1; font-family: inherit; font-size: 13px; font-weight: 600;
+    padding: 9px; border-radius: 7px; border: none; cursor: pointer; transition: all .15s;
+  }
+  .pin-btn-confirm { background: #0e7490; color: #fff; }
+  .pin-btn-confirm:hover { background: #0c6880; }
+  .pin-btn-cancel { background: #f1f5f9; color: #64748b; }
+  .pin-btn-cancel:hover { background: #e2e8f0; }
+  .pin-error-msg { font-size: 12px; color: #ef4444; font-weight: 500; min-height: 16px; }
+ 
 </style>
 </head>
 <body>
@@ -279,6 +319,23 @@
     <div class="stat-pill"><span class="stat-val" id="stat-ideas">—</span><span class="stat-lbl">Ideas</span></div>
   </div>
   <div id="calendar"></div>
+</div>
+ 
+ 
+<!-- PIN Modal -->
+<div id="pin-modal">
+  <div class="pin-box">
+    <div class="pin-icon">🔐</div>
+    <div class="pin-title">Admin Required</div>
+    <div class="pin-sub">Enter PIN to delete this card</div>
+    <input class="pin-input" id="pin-input" type="password" maxlength="6"
+      placeholder="••••" onkeydown="if(event.key==='Enter') window._pinConfirm()" />
+    <div class="pin-error-msg" id="pin-error"></div>
+    <div class="pin-btns">
+      <button class="pin-btn pin-btn-cancel" onclick="window._pinCancel()">Cancel</button>
+      <button class="pin-btn pin-btn-confirm" onclick="window._pinConfirm()">Confirm</button>
+    </div>
+  </div>
 </div>
  
 <script type="module">
@@ -536,7 +593,7 @@ function buildCard(row, wi, ri) {
         onclick="window._togglePublished('${row.id}',${wi})">✓</button>
       ${row.published ? '<span class="published-badge">✓ Published</span>' : ''}
       <button class="btn-icon" title="Duplicate" onclick="window._duplicateRow('${row.id}',${wi},${ri})">⧉</button>
-      <button class="btn-icon del" title="Delete" onclick="window._deleteRow('${row.id}',${wi})">✕</button>
+      <button class="btn-icon del" title="Delete" onclick="window._guardedDeleteRow('${row.id}',${wi})">✕</button>
     </div>
     <div class="card-body">
       <div class="field-block">
@@ -618,6 +675,57 @@ function duplicateRow(id, wi, ri) {
   weeks[wi].rows.splice(ri + 1, 0, clone);
   renderAll();
   saveToFirebase(wi);
+}
+ 
+// ── PIN-protected delete ─────────────────────────────────────────────────────
+// Change this to your own secret PIN. It is only checked in the browser —
+// for true security you'd need a backend, but this stops casual deletion.
+const ADMIN_PIN = "7749"; // ← CHANGE THIS TO YOUR PIN
+ 
+let _pinUnlocked = false;   // stays true for the whole browser session once correct PIN entered
+let _pendingDeleteId  = null;
+let _pendingDeleteWi  = null;
+ 
+function guardedDeleteRow(id, wi) {
+  if (_pinUnlocked) {
+    deleteRow(id, wi);
+    return;
+  }
+  // Show modal
+  _pendingDeleteId = id;
+  _pendingDeleteWi = wi;
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-input').classList.remove('error');
+  document.getElementById('pin-modal').classList.add('open');
+  setTimeout(() => document.getElementById('pin-input').focus(), 50);
+}
+ 
+function pinConfirm() {
+  const entered = document.getElementById('pin-input').value.trim();
+  if (entered === ADMIN_PIN) {
+    _pinUnlocked = true;
+    document.getElementById('pin-modal').classList.remove('open');
+    if (_pendingDeleteId !== null) {
+      deleteRow(_pendingDeleteId, _pendingDeleteWi);
+      _pendingDeleteId = null;
+      _pendingDeleteWi = null;
+    }
+  } else {
+    const inp = document.getElementById('pin-input');
+    inp.classList.remove('error');
+    void inp.offsetWidth; // re-trigger animation
+    inp.classList.add('error');
+    document.getElementById('pin-error').textContent = 'Incorrect PIN. Try again.';
+    inp.value = '';
+    inp.focus();
+  }
+}
+ 
+function pinCancel() {
+  document.getElementById('pin-modal').classList.remove('open');
+  _pendingDeleteId = null;
+  _pendingDeleteWi = null;
 }
  
 function deleteRow(id, wi) {
@@ -720,7 +828,10 @@ function updateHeaderBadge() {
 window._updateField     = updateField;
 window._styleStatus     = styleStatus;
 window._duplicateRow    = duplicateRow;
-window._deleteRow       = deleteRow;
+window._deleteRow           = deleteRow;
+window._guardedDeleteRow    = guardedDeleteRow;
+window._pinConfirm          = pinConfirm;
+window._pinCancel           = pinCancel;
 window._togglePublished = togglePublished;
 window._addRow          = addRow;
 window.addWeekBlock     = addWeekBlock;
