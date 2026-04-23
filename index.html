@@ -39,6 +39,7 @@
     --day-thu-bg: #fff7ed; --day-thu-border: #f97316;
     --day-fri-bg: #f0fdf4; --day-fri-border: #22c55e;
     --day-sat-bg: #faf5ff; --day-sat-border: #a855f7;
+    --day-sun-bg: #f0f9ff; --day-sun-border: #0ea5e9;
   }
  
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text-primary); min-height: 100vh; padding: 0; }
@@ -112,6 +113,7 @@
   .card.day-thu { background: var(--day-thu-bg); border-left: 3px solid var(--day-thu-border); }
   .card.day-fri { background: var(--day-fri-bg); border-left: 3px solid var(--day-fri-border); }
   .card.day-sat { background: var(--day-sat-bg); border-left: 3px solid var(--day-sat-border); }
+  .card.day-sun { background: var(--day-sun-bg); border-left: 3px solid var(--day-sun-border); }
  
   .card.is-published { opacity: 0.72; }
   .card.is-published .card-body { position: relative; }
@@ -287,6 +289,17 @@
   .pin-btn-cancel:hover { background: #e2e8f0; }
   .pin-error-msg { font-size: 12px; color: #ef4444; font-weight: 500; min-height: 16px; }
  
+ 
+  .day-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .btn-add-day-card {
+    align-self: flex-start;
+    font-family: inherit; font-size: 11px; font-weight: 600;
+    color: var(--accent); background: var(--accent-light);
+    border: 1px dashed var(--accent-mid); border-radius: 6px;
+    padding: 5px 14px; cursor: pointer; transition: all .15s;
+    margin-top: 2px; letter-spacing: 0.02em;
+  }
+  .btn-add-day-card:hover { background: var(--accent-mid); border-style: solid; }
 </style>
 </head>
 <body>
@@ -360,7 +373,7 @@ const START = new Date(2026, 3, 21); // 21 Apr 2026 (Tuesday)
  
 // FORCE_RESET: set true ONCE to wipe + rebuild, then immediately set back to false.
 // ⚠️ Leaving this true will wipe all data on every page load.
-const FORCE_RESET = false;
+const FORCE_RESET = true;
  
 // ── State ─────────────────────────────────────────────────────────────────────
 let weeks = [];
@@ -457,41 +470,71 @@ function applyRemoteSnapshot(snapshot) {
 }
  
 // ── Data builder ──────────────────────────────────────────────────────────────
-// Week starts Tuesday (21 Apr 2026). Sunday skipped.
-// Monday: Doctor Didi card + 2 extras. Tue–Sat: 3 blank cards each.
+// Week 1: Tue 21 Apr 2026 → Sun 26 Apr (Dr Didi Ep.7 on Tuesday)
+// Week 2+: Mon → Sun (Dr Didi on Monday + 1 blank; all other days 1 blank)
+// Sunday IS included. Each day gets exactly 1 card by default.
 function buildWeeks() {
   const result = [];
   let ep = 7;
-  const DAY_NAMES = ["Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday","Monday"];
  
   for (let w = 0; w < 20; w++) {
     const rows = [];
-    for (let d = 0; d < 7; d++) {
-      const date = new Date(START);
-      date.setDate(START.getDate() + w * 7 + d);
-      const dayName = DAY_NAMES[d];
-      const dateStr = date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
  
-      if (dayName === "Sunday") continue;
+    if (w === 0) {
+      // ── Week 1: Tue 21 Apr → Sun 26 Apr ────────────────────────────────
+      const DAY_NAMES_W1 = ["Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+      for (let d = 0; d < 6; d++) {
+        const date = new Date(START); // START = Tue 21 Apr
+        date.setDate(START.getDate() + d);
+        const dayName = DAY_NAMES_W1[d];
+        const dateStr = date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
  
-      if (dayName === "Monday") {
-        rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: true, isDoctorDidi: true,
-          episode: ep++, title: `Doctor Didi Episode ${ep - 1}`,
-          script: '', visual: '', reference: '', assignedTo: '',
-          status: 'Idea', deadline: dateStr, published: false });
-        for (let s = 0; s < 2; s++) {
-          rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: true, isDoctorDidi: false,
+        if (d === 0) {
+          // Tuesday 21 Apr — Dr Didi Ep.7
+          rows.push({ id: uid(), date: dateStr, day: dayName,
+            isMonday: false, isDoctorDidi: true, episode: ep++,
+            title: `Doctor Didi Episode ${ep - 1}`,
+            script: '', visual: '', reference: '', assignedTo: '',
+            status: 'Idea', deadline: dateStr, published: false });
+        } else {
+          rows.push({ id: uid(), date: dateStr, day: dayName,
+            isMonday: false, isDoctorDidi: false,
             title: '', script: '', visual: '', reference: '', assignedTo: '',
             status: 'Idea', deadline: dateStr, published: false });
         }
-      } else {
-        for (let s = 0; s < 3; s++) {
-          rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: false, isDoctorDidi: false,
+      }
+    } else {
+      // ── Week 2+: Mon → Sun ──────────────────────────────────────────────
+      // Week 2 starts Mon 27 Apr. Offset from START: week 1 used 6 days (Tue–Sun).
+      const weekOffset = 6 + (w - 1) * 7; // days from START
+      const DAY_NAMES_W = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
+      for (let d = 0; d < 7; d++) {
+        const date = new Date(START);
+        date.setDate(START.getDate() + weekOffset + d);
+        const dayName = DAY_NAMES_W[d];
+        const dateStr = date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+ 
+        if (d === 0) {
+          // Monday — Dr Didi card + 1 blank
+          rows.push({ id: uid(), date: dateStr, day: dayName,
+            isMonday: true, isDoctorDidi: true, episode: ep++,
+            title: `Doctor Didi Episode ${ep - 1}`,
+            script: '', visual: '', reference: '', assignedTo: '',
+            status: 'Idea', deadline: dateStr, published: false });
+          rows.push({ id: uid(), date: dateStr, day: dayName,
+            isMonday: true, isDoctorDidi: false,
+            title: '', script: '', visual: '', reference: '', assignedTo: '',
+            status: 'Idea', deadline: dateStr, published: false });
+        } else {
+          // Tue–Sun — 1 blank card
+          rows.push({ id: uid(), date: dateStr, day: dayName,
+            isMonday: false, isDoctorDidi: false,
             title: '', script: '', visual: '', reference: '', assignedTo: '',
             status: 'Idea', deadline: dateStr, published: false });
         }
       }
     }
+ 
     result.push({ weekNum: w + 1, rows });
   }
   return result;
@@ -539,14 +582,39 @@ function renderAll() {
         <span class="week-label">Week ${week.weekNum}</span>
         <span class="week-title">${weekDateRange(week)}</span>
         <div class="week-divider"></div>
-        <button class="btn-add-row" onclick="window._addRow(${wi})">+ Add Post</button>
       </div>
       <div class="cards-list" id="cards-${wi}"></div>`;
     cal.appendChild(block);
  
     const list = block.querySelector(`#cards-${wi}`);
-    week.rows.forEach((row, ri) => list.appendChild(buildCard(row, wi, ri)));
-    list.appendChild(buildBlankRow(wi));
+ 
+    // Group rows by date and render with per-day add button
+    const dayGroups = [];
+    let currentDay = null;
+    (week.rows || []).forEach((row, ri) => {
+      const key = row.date + '|' + row.day;
+      if (key !== currentDay) {
+        dayGroups.push({ key, date: row.date, day: row.day, rows: [], startRi: ri });
+        currentDay = key;
+      }
+      dayGroups[dayGroups.length - 1].rows.push({ row, ri });
+    });
+ 
+    dayGroups.forEach(group => {
+      // Day group wrapper
+      const dayWrap = document.createElement('div');
+      dayWrap.className = 'day-group';
+      list.appendChild(dayWrap);
+ 
+      group.rows.forEach(({ row, ri }) => dayWrap.appendChild(buildCard(row, wi, ri)));
+ 
+      // Per-day "+ Add Card" button
+      const addBtn = document.createElement('button');
+      addBtn.className = 'btn-add-day-card';
+      addBtn.innerHTML = '＋ Add card for ' + (group.day || group.date);
+      addBtn.onclick = () => window._addCardForDay(wi, group.date, group.day);
+      dayWrap.appendChild(addBtn);
+    });
   });
  
   updateStats();
@@ -561,7 +629,7 @@ function weekDateRange(week) {
  
 const DAY_CLASS = {
   Monday:'day-mon', Tuesday:'day-tue', Wednesday:'day-wed',
-  Thursday:'day-thu', Friday:'day-fri', Saturday:'day-sat'
+  Thursday:'day-thu', Friday:'day-fri', Saturday:'day-sat', Sunday:'day-sun'
 };
  
 function buildCard(row, wi, ri) {
@@ -754,23 +822,40 @@ function addRow(wi) {
   });
   renderAll();
   saveToFirebase(wi);
-  setTimeout(() => {
-    const list = document.getElementById('cards-' + wi);
-    if (list) {
-      const children = list.children;
-      const target = children[children.length - 2] || children[children.length - 1];
-      target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }, 50);
+}
+ 
+function addCardForDay(wi, date, day) {
+  // Insert new card right after the last card for this day
+  const rows = weeks[wi].rows;
+  // Find last index of this day
+  let insertAt = -1;
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i].date === date && rows[i].day === day) insertAt = i;
+  }
+  const newCard = {
+    id: uid(), date, day,
+    isMonday: day === 'Monday', isDoctorDidi: false,
+    title: '', script: '', visual: '', reference: '', assignedTo: '',
+    status: 'Idea', deadline: date, published: false
+  };
+  if (insertAt >= 0) {
+    rows.splice(insertAt + 1, 0, newCard);
+  } else {
+    rows.push(newCard);
+  }
+  renderAll();
+  saveToFirebase(wi);
 }
  
 function addWeekBlock() {
   const newWeekNum = weeks.length + 1;
+  // Week 1 used 6 days (Tue–Sun), subsequent weeks use 7 days (Mon–Sun)
+  const weekOffset = 6 + (newWeekNum - 2) * 7;
   const weekStart = new Date(START);
-  weekStart.setDate(START.getDate() + (newWeekNum - 1) * 7);
-  const DAY_NAMES = ["Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday","Monday"];
+  weekStart.setDate(START.getDate() + weekOffset);
+  const DAY_NAMES = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
   const rows = [];
-  const epNum = 7 + (newWeekNum - 1);
+  const epNum = 7 + (newWeekNum - 1); // ep numbering continues from buildWeeks
  
   for (let d = 0; d < 7; d++) {
     const date = new Date(weekStart);
@@ -778,24 +863,20 @@ function addWeekBlock() {
     const dayName = DAY_NAMES[d];
     const dateStr = date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
  
-    if (dayName === "Sunday") continue;
- 
-    if (dayName === "Monday") {
+    if (d === 0) {
+      // Monday — Dr Didi + 1 blank
       rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: true, isDoctorDidi: true,
         episode: epNum, title: `Doctor Didi Episode ${epNum}`,
         script: '', visual: '', reference: '', assignedTo: '',
         status: 'Idea', deadline: dateStr, published: false });
-      for (let s = 0; s < 2; s++) {
-        rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: true, isDoctorDidi: false,
-          title: '', script: '', visual: '', reference: '', assignedTo: '',
-          status: 'Idea', deadline: dateStr, published: false });
-      }
+      rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: true, isDoctorDidi: false,
+        title: '', script: '', visual: '', reference: '', assignedTo: '',
+        status: 'Idea', deadline: dateStr, published: false });
     } else {
-      for (let s = 0; s < 3; s++) {
-        rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: false, isDoctorDidi: false,
-          title: '', script: '', visual: '', reference: '', assignedTo: '',
-          status: 'Idea', deadline: dateStr, published: false });
-      }
+      // Tue–Sun — 1 blank
+      rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: false, isDoctorDidi: false,
+        title: '', script: '', visual: '', reference: '', assignedTo: '',
+        status: 'Idea', deadline: dateStr, published: false });
     }
   }
  
@@ -834,6 +915,7 @@ window._pinConfirm          = pinConfirm;
 window._pinCancel           = pinCancel;
 window._togglePublished = togglePublished;
 window._addRow          = addRow;
+window._addCardForDay   = addCardForDay;
 window.addWeekBlock     = addWeekBlock;
  
 // ── Boot ──────────────────────────────────────────────────────────────────────
