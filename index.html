@@ -289,7 +289,6 @@
   .pin-btn-cancel:hover { background: #e2e8f0; }
   .pin-error-msg { font-size: 12px; color: #ef4444; font-weight: 500; min-height: 16px; }
  
- 
   .day-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
   .btn-add-day-card {
     align-self: flex-start;
@@ -300,6 +299,173 @@
     margin-top: 2px; letter-spacing: 0.02em;
   }
   .btn-add-day-card:hover { background: var(--accent-mid); border-style: solid; }
+ 
+  /* ── Reference Button ─────────────────────────────────────────────────────── */
+  .btn-ref {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: inherit; font-size: 12px; font-weight: 500;
+    color: #6b7280; background: #f9fafb;
+    border: 1px solid var(--border); border-radius: 6px;
+    padding: 5px 10px; cursor: pointer; transition: all .15s;
+    white-space: nowrap; margin-top: 4px;
+  }
+  .btn-ref:hover { background: #f0f9ff; border-color: var(--accent); color: var(--accent); }
+  .btn-ref .ref-count {
+    background: var(--accent); color: #fff;
+    font-size: 10px; font-weight: 700;
+    width: 18px; height: 18px; border-radius: 99px;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .btn-ref .ref-count.empty { background: #d1d5db; }
+ 
+  /* ── Reference Modal ──────────────────────────────────────────────────────── */
+  #ref-modal {
+    display: none; position: fixed; inset: 0; z-index: 9998;
+    background: rgba(0,0,0,0.5); backdrop-filter: blur(6px);
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  #ref-modal.open { display: flex; }
+ 
+  .ref-box {
+    background: #fff; border-radius: 16px;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.22);
+    width: 100%; max-width: 560px;
+    display: flex; flex-direction: column;
+    max-height: 90vh; overflow: hidden;
+    animation: refSlideIn .2s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes refSlideIn {
+    from { opacity: 0; transform: translateY(20px) scale(0.97); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+ 
+  .ref-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px 16px; border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .ref-header-left { display: flex; flex-direction: column; gap: 2px; }
+  .ref-title { font-size: 15px; font-weight: 700; color: var(--text-primary); }
+  .ref-subtitle { font-size: 12px; color: var(--text-muted); }
+  .ref-close {
+    background: #f1f5f9; border: none; border-radius: 8px;
+    width: 32px; height: 32px; cursor: pointer; font-size: 16px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-secondary); transition: all .15s;
+  }
+  .ref-close:hover { background: #fee2e2; color: #dc2626; }
+ 
+  .ref-tabs {
+    display: flex; gap: 0; padding: 12px 24px 0; border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .ref-tab {
+    font-family: inherit; font-size: 13px; font-weight: 500;
+    background: none; border: none; cursor: pointer;
+    padding: 8px 16px; border-radius: 8px 8px 0 0;
+    color: var(--text-secondary); position: relative;
+    transition: color .15s;
+  }
+  .ref-tab.active { color: var(--accent); }
+  .ref-tab.active::after {
+    content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
+    height: 2px; background: var(--accent); border-radius: 2px 2px 0 0;
+  }
+  .ref-tab:hover:not(.active) { color: var(--text-primary); background: var(--bg); }
+ 
+  .ref-body { flex: 1; overflow-y: auto; padding: 20px 24px; }
+ 
+  /* Upload tab */
+  .upload-zone {
+    border: 2px dashed #cbd5e1; border-radius: 12px;
+    padding: 32px 20px; text-align: center;
+    background: #fafafa; transition: all .2s; cursor: pointer;
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent); background: var(--accent-light);
+  }
+  .upload-zone input[type=file] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .upload-icon { font-size: 32px; margin-bottom: 10px; }
+  .upload-text { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
+  .upload-sub { font-size: 12px; color: var(--text-muted); }
+  .upload-progress {
+    margin-top: 12px; background: var(--border); border-radius: 99px;
+    height: 4px; overflow: hidden; display: none;
+  }
+  .upload-progress-bar {
+    height: 100%; background: var(--accent); border-radius: 99px;
+    transition: width .3s; width: 0%;
+  }
+  .upload-status { font-size: 12px; color: var(--accent); margin-top: 8px; display: none; font-weight: 500; }
+ 
+  /* Link tab */
+  .link-form { display: flex; flex-direction: column; gap: 10px; }
+  .link-form-row { display: flex; gap: 8px; align-items: flex-end; }
+  .link-field { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+  .link-field label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); }
+  .link-inp {
+    font-family: inherit; font-size: 13px;
+    border: 1px solid var(--border); border-radius: 7px;
+    padding: 8px 10px; outline: none; width: 100%;
+    transition: border-color .15s;
+  }
+  .link-inp:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-mid); }
+  .btn-add-link {
+    font-family: inherit; font-size: 13px; font-weight: 600;
+    background: var(--accent); color: #fff; border: none;
+    border-radius: 7px; padding: 9px 18px; cursor: pointer;
+    transition: background .15s; white-space: nowrap; flex-shrink: 0;
+    align-self: flex-end; height: 38px;
+  }
+  .btn-add-link:hover { background: #0c6880; }
+ 
+  /* Reference list */
+  .ref-list { display: flex; flex-direction: column; gap: 6px; margin-top: 16px; }
+  .ref-list-title {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--text-muted); margin-bottom: 4px;
+  }
+  .ref-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 10px;
+    transition: box-shadow .15s;
+  }
+  .ref-item:hover { box-shadow: var(--shadow); }
+  .ref-item-icon { font-size: 18px; flex-shrink: 0; }
+  .ref-item-info { flex: 1; min-width: 0; }
+  .ref-item-name {
+    font-size: 13px; font-weight: 500; color: var(--text-primary);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .ref-item-meta { font-size: 11px; color: var(--text-muted); }
+  .ref-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .ref-item-btn {
+    background: none; border: 1px solid var(--border); border-radius: 6px;
+    width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; font-size: 13px; transition: all .15s;
+    color: var(--text-secondary); text-decoration: none;
+  }
+  .ref-item-btn:hover { background: var(--bg); border-color: var(--text-secondary); }
+  .ref-item-btn.del-ref:hover { background: #fee2e2; border-color: #f87171; color: #dc2626; }
+ 
+  .ref-empty {
+    text-align: center; padding: 24px 0; color: var(--text-muted);
+    font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .ref-empty .empty-icon { font-size: 28px; }
+ 
+  /* image preview thumbnail */
+  .ref-thumb {
+    width: 36px; height: 36px; border-radius: 6px;
+    object-fit: cover; flex-shrink: 0; border: 1px solid var(--border);
+  }
+ 
+  /* upload error */
+  .upload-error { font-size: 12px; color: #ef4444; font-weight: 500; margin-top: 6px; display: none; }
 </style>
 </head>
 <body>
@@ -334,7 +500,6 @@
   <div id="calendar"></div>
 </div>
  
- 
 <!-- PIN Modal -->
 <div id="pin-modal">
   <div class="pin-box">
@@ -351,10 +516,74 @@
   </div>
 </div>
  
+<!-- Reference Modal -->
+<div id="ref-modal">
+  <div class="ref-box">
+    <div class="ref-header">
+      <div class="ref-header-left">
+        <div class="ref-title">📎 References</div>
+        <div class="ref-subtitle" id="ref-modal-subtitle">Add files or links for this post</div>
+      </div>
+      <button class="ref-close" onclick="window._closeRefModal()">✕</button>
+    </div>
+ 
+    <div class="ref-tabs">
+      <button class="ref-tab active" id="tab-upload" onclick="window._switchRefTab('upload')">📁 Upload File</button>
+      <button class="ref-tab" id="tab-link" onclick="window._switchRefTab('link')">🔗 Add Link</button>
+    </div>
+ 
+    <div class="ref-body">
+      <!-- Upload tab -->
+      <div id="ref-panel-upload">
+        <div class="upload-zone" id="upload-zone">
+          <input type="file" id="file-input" accept="image/*,video/*,.pdf,.doc,.docx"
+            multiple onchange="window._handleFileSelect(this.files)" />
+          <div class="upload-icon">☁️</div>
+          <div class="upload-text">Drop files here or click to browse</div>
+          <div class="upload-sub">Images, Videos, PDFs, Docs — up to 50 MB each</div>
+          <div class="upload-progress" id="upload-progress">
+            <div class="upload-progress-bar" id="upload-progress-bar"></div>
+          </div>
+          <div class="upload-status" id="upload-status"></div>
+          <div class="upload-error" id="upload-error"></div>
+        </div>
+        <div class="ref-list" id="ref-list-files">
+          <div class="ref-list-title">Uploaded Files</div>
+          <div id="ref-files-inner"></div>
+        </div>
+      </div>
+ 
+      <!-- Link tab -->
+      <div id="ref-panel-link" style="display:none">
+        <div class="link-form">
+          <div class="link-field">
+            <label>URL</label>
+            <input class="link-inp" id="link-url-inp" type="url" placeholder="https://…" />
+          </div>
+          <div class="link-form-row">
+            <div class="link-field">
+              <label>Label (optional)</label>
+              <input class="link-inp" id="link-label-inp" type="text" placeholder="e.g. Inspo reel, Reference doc…"
+                onkeydown="if(event.key==='Enter') window._addLink()" />
+            </div>
+            <button class="btn-add-link" onclick="window._addLink()">+ Add</button>
+          </div>
+        </div>
+        <div class="ref-list" id="ref-list-links">
+          <div class="ref-list-title">Saved Links</div>
+          <div id="ref-links-inner"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+ 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
 import { getFirestore, collection, onSnapshot, setDoc, getDocs, deleteDoc, doc }
   from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL, deleteObject }
+  from "https://www.gstatic.com/firebasejs/10.11.1/firebase-storage.js";
  
 // ── Firebase ──────────────────────────────────────────────────────────────────
 const firebaseConfig = {
@@ -367,18 +596,21 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
+const storage = getStorage(app);
  
 // ── Constants ─────────────────────────────────────────────────────────────────
-const START = new Date(2026, 3, 21); // 21 Apr 2026 (Tuesday)
- 
-// FORCE_RESET: set true ONCE to wipe + rebuild, then immediately set back to false.
-// ⚠️ Leaving this true will wipe all data on every page load.
-const FORCE_RESET = true;
+const START = new Date(2026, 3, 21);
+const FORCE_RESET = false; // Set true ONCE to wipe+rebuild, then back to false
  
 // ── State ─────────────────────────────────────────────────────────────────────
 let weeks = [];
  
-// ── Save (debounced, per-week) ────────────────────────────────────────────────
+// ── Reference Modal State ─────────────────────────────────────────────────────
+let _refRowId = null;
+let _refWeekIdx = null;
+let _refActiveTab = 'upload';
+ 
+// ── Save ──────────────────────────────────────────────────────────────────────
 let _saveTimer = null;
 const _dirtyWeeks = new Set();
 let _localEditInFlight = false;
@@ -395,9 +627,8 @@ function saveToFirebase(weekIndex) {
       for (const i of toSave) {
         if (weeks[i]) await setDoc(doc(db, "calendar", "week-" + i), weeks[i]);
       }
-    } catch (_) {
-      // Silent — edits held in memory
-    } finally {
+    } catch (_) {}
+    finally {
       _localEditInFlight = false;
       if (_pendingRemoteSnapshot) {
         applyRemoteSnapshot(_pendingRemoteSnapshot);
@@ -413,7 +644,6 @@ let _resetDone = false;
  
 function startRealtimeSync() {
   onSnapshot(collection(db, "calendar"), async (snapshot) => {
- 
     if (_firstSnapshot) {
       _firstSnapshot = false;
       const loaded = [];
@@ -444,14 +674,12 @@ function startRealtimeSync() {
       updateHeaderBadge();
  
     } else {
-      // Remote update from collaborator — queue if local save in flight
       if (_localEditInFlight || _saveTimer) {
         _pendingRemoteSnapshot = snapshot;
         return;
       }
       applyRemoteSnapshot(snapshot);
     }
- 
   }, () => {
     weeks = buildWeeks();
     document.getElementById('loading-overlay').style.display = 'none';
@@ -470,71 +698,57 @@ function applyRemoteSnapshot(snapshot) {
 }
  
 // ── Data builder ──────────────────────────────────────────────────────────────
-// Week 1: Tue 21 Apr 2026 → Sun 26 Apr (Dr Didi Ep.7 on Tuesday)
-// Week 2+: Mon → Sun (Dr Didi on Monday + 1 blank; all other days 1 blank)
-// Sunday IS included. Each day gets exactly 1 card by default.
 function buildWeeks() {
   const result = [];
   let ep = 7;
- 
   for (let w = 0; w < 20; w++) {
     const rows = [];
- 
     if (w === 0) {
-      // ── Week 1: Tue 21 Apr → Sun 26 Apr ────────────────────────────────
       const DAY_NAMES_W1 = ["Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
       for (let d = 0; d < 6; d++) {
-        const date = new Date(START); // START = Tue 21 Apr
+        const date = new Date(START);
         date.setDate(START.getDate() + d);
         const dayName = DAY_NAMES_W1[d];
         const dateStr = date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
- 
         if (d === 0) {
-          // Tuesday 21 Apr — Dr Didi Ep.7
           rows.push({ id: uid(), date: dateStr, day: dayName,
             isMonday: false, isDoctorDidi: true, episode: ep++,
             title: `Doctor Didi Episode ${ep - 1}`,
-            script: '', visual: '', reference: '', assignedTo: '',
+            script: '', visual: '', references: [], assignedTo: '',
             status: 'Idea', deadline: dateStr, published: false });
         } else {
           rows.push({ id: uid(), date: dateStr, day: dayName,
             isMonday: false, isDoctorDidi: false,
-            title: '', script: '', visual: '', reference: '', assignedTo: '',
+            title: '', script: '', visual: '', references: [], assignedTo: '',
             status: 'Idea', deadline: dateStr, published: false });
         }
       }
     } else {
-      // ── Week 2+: Mon → Sun ──────────────────────────────────────────────
-      // Week 2 starts Mon 27 Apr. Offset from START: week 1 used 6 days (Tue–Sun).
-      const weekOffset = 6 + (w - 1) * 7; // days from START
+      const weekOffset = 6 + (w - 1) * 7;
       const DAY_NAMES_W = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
       for (let d = 0; d < 7; d++) {
         const date = new Date(START);
         date.setDate(START.getDate() + weekOffset + d);
         const dayName = DAY_NAMES_W[d];
         const dateStr = date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
- 
         if (d === 0) {
-          // Monday — Dr Didi card + 1 blank
           rows.push({ id: uid(), date: dateStr, day: dayName,
             isMonday: true, isDoctorDidi: true, episode: ep++,
             title: `Doctor Didi Episode ${ep - 1}`,
-            script: '', visual: '', reference: '', assignedTo: '',
+            script: '', visual: '', references: [], assignedTo: '',
             status: 'Idea', deadline: dateStr, published: false });
           rows.push({ id: uid(), date: dateStr, day: dayName,
             isMonday: true, isDoctorDidi: false,
-            title: '', script: '', visual: '', reference: '', assignedTo: '',
+            title: '', script: '', visual: '', references: [], assignedTo: '',
             status: 'Idea', deadline: dateStr, published: false });
         } else {
-          // Tue–Sun — 1 blank card
           rows.push({ id: uid(), date: dateStr, day: dayName,
             isMonday: false, isDoctorDidi: false,
-            title: '', script: '', visual: '', reference: '', assignedTo: '',
+            title: '', script: '', visual: '', references: [], assignedTo: '',
             status: 'Idea', deadline: dateStr, published: false });
         }
       }
     }
- 
     result.push({ weekNum: w + 1, rows });
   }
   return result;
@@ -587,8 +801,6 @@ function renderAll() {
     cal.appendChild(block);
  
     const list = block.querySelector(`#cards-${wi}`);
- 
-    // Group rows by date and render with per-day add button
     const dayGroups = [];
     let currentDay = null;
     (week.rows || []).forEach((row, ri) => {
@@ -601,14 +813,10 @@ function renderAll() {
     });
  
     dayGroups.forEach(group => {
-      // Day group wrapper
       const dayWrap = document.createElement('div');
       dayWrap.className = 'day-group';
       list.appendChild(dayWrap);
- 
       group.rows.forEach(({ row, ri }) => dayWrap.appendChild(buildCard(row, wi, ri)));
- 
-      // Per-day "+ Add Card" button
       const addBtn = document.createElement('button');
       addBtn.className = 'btn-add-day-card';
       addBtn.innerHTML = '＋ Add card for ' + (group.day || group.date);
@@ -616,7 +824,6 @@ function renderAll() {
       dayWrap.appendChild(addBtn);
     });
   });
- 
   updateStats();
 }
  
@@ -633,6 +840,13 @@ const DAY_CLASS = {
 };
  
 function buildCard(row, wi, ri) {
+  // Ensure references is always an array (migrate old "reference" string)
+  if (!Array.isArray(row.references)) {
+    row.references = row.reference ? [{ id: uid(), type: 'link', url: row.reference, label: 'Link' }] : [];
+    delete row.reference;
+  }
+  const refCount = (row.references || []).length;
+ 
   const card = document.createElement('div');
   card.className = 'card ' + (DAY_CLASS[row.day] || '') + (row.published ? ' is-published' : '');
   card.dataset.id = row.id;
@@ -681,8 +895,10 @@ function buildCard(row, wi, ri) {
       </div>
       <div class="field-block">
         <div class="field-label">Reference</div>
-        <input class="inp-text" type="text" value="${esc(row.reference)}" placeholder="Link or inspo…"
-          oninput="window._updateField('${row.id}','reference',this.value)" />
+        <button class="btn-ref" onclick="window._openRefModal('${row.id}', ${wi})">
+          📎 References
+          <span class="ref-count ${refCount === 0 ? 'empty' : ''}">${refCount}</span>
+        </button>
       </div>
       <div class="field-block">
         <div class="field-label">Assigned To</div>
@@ -695,20 +911,222 @@ function buildCard(row, wi, ri) {
   return card;
 }
  
-function buildBlankRow(wi) {
-  const div = document.createElement('div');
-  div.className = 'card blank-row';
-  div.style.cursor = 'pointer';
-  div.title = 'Click to add a new post';
-  div.innerHTML = `<div class="card-topbar" style="justify-content:center;padding:14px;color:var(--text-muted);font-size:13px;gap:6px;"><span>＋</span><span>Add new post to this week</span></div>`;
-  div.onclick = () => window._addRow(wi);
-  return div;
-}
- 
 function esc(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+ 
+// ── Reference Modal ───────────────────────────────────────────────────────────
+function getRefRow() {
+  if (_refRowId === null) return null;
+  for (let i = 0; i < weeks.length; i++) {
+    const row = weeks[i].rows.find(r => r.id === _refRowId);
+    if (row) return { row, wi: i };
+  }
+  return null;
+}
+ 
+function openRefModal(rowId, wi) {
+  _refRowId = rowId;
+  _refWeekIdx = wi;
+  const res = getRefRow();
+  if (!res) return;
+  const { row } = res;
+  document.getElementById('ref-modal-subtitle').textContent =
+    (row.title || row.date || 'this post');
+  document.getElementById('ref-modal').classList.add('open');
+  // Reset upload UI
+  document.getElementById('upload-progress').style.display = 'none';
+  document.getElementById('upload-status').style.display = 'none';
+  document.getElementById('upload-error').style.display = 'none';
+  document.getElementById('file-input').value = '';
+  switchRefTab(_refActiveTab);
+  renderRefLists();
+}
+ 
+function closeRefModal() {
+  document.getElementById('ref-modal').classList.remove('open');
+  _refRowId = null;
+  _refWeekIdx = null;
+}
+ 
+function switchRefTab(tab) {
+  _refActiveTab = tab;
+  document.getElementById('ref-panel-upload').style.display = tab === 'upload' ? '' : 'none';
+  document.getElementById('ref-panel-link').style.display   = tab === 'link'   ? '' : 'none';
+  document.getElementById('tab-upload').classList.toggle('active', tab === 'upload');
+  document.getElementById('tab-link').classList.toggle('active', tab === 'link');
+}
+ 
+function renderRefLists() {
+  const res = getRefRow();
+  const refs = res ? (res.row.references || []) : [];
+ 
+  const files = refs.filter(r => r.type === 'file');
+  const links = refs.filter(r => r.type === 'link');
+ 
+  // Files
+  const filesInner = document.getElementById('ref-files-inner');
+  if (files.length === 0) {
+    filesInner.innerHTML = `<div class="ref-empty"><div class="empty-icon">🗂️</div>No files uploaded yet</div>`;
+  } else {
+    filesInner.innerHTML = files.map(r => refItemHTML(r)).join('');
+  }
+ 
+  // Links
+  const linksInner = document.getElementById('ref-links-inner');
+  if (links.length === 0) {
+    linksInner.innerHTML = `<div class="ref-empty"><div class="empty-icon">🔗</div>No links added yet</div>`;
+  } else {
+    linksInner.innerHTML = links.map(r => refItemHTML(r)).join('');
+  }
+}
+ 
+function refItemHTML(r) {
+  const isImage = r.mimeType && r.mimeType.startsWith('image/');
+  const isVideo = r.mimeType && r.mimeType.startsWith('video/');
+  const icon = r.type === 'link' ? '🔗' : isImage ? '🖼️' : isVideo ? '🎬' : '📄';
+  const thumb = isImage ? `<img class="ref-thumb" src="${esc(r.url)}" alt="" />` : '';
+  const displayName = esc(r.label || r.name || r.url || '');
+  const meta = r.type === 'link' ? esc(r.url) : (r.size ? formatBytes(r.size) : '');
+ 
+  return `<div class="ref-item" data-refid="${esc(r.id)}">
+    ${thumb || `<span class="ref-item-icon">${icon}</span>`}
+    <div class="ref-item-info">
+      <div class="ref-item-name">${displayName}</div>
+      ${meta ? `<div class="ref-item-meta">${meta}</div>` : ''}
+    </div>
+    <div class="ref-item-actions">
+      <a class="ref-item-btn" href="${esc(r.url)}" target="_blank" title="Open">↗</a>
+      <button class="ref-item-btn del-ref" title="Remove" onclick="window._removeRef('${esc(r.id)}')">✕</button>
+    </div>
+  </div>`;
+}
+ 
+function formatBytes(b) {
+  if (b < 1024) return b + ' B';
+  if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+  return (b/1048576).toFixed(1) + ' MB';
+}
+ 
+// File upload
+function handleFileSelect(files) {
+  if (!files || !files.length) return;
+  Array.from(files).forEach(file => uploadFile(file));
+}
+ 
+function uploadFile(file) {
+  const MAX = 50 * 1024 * 1024;
+  const errEl = document.getElementById('upload-error');
+  if (file.size > MAX) {
+    errEl.textContent = `${file.name} exceeds 50 MB limit.`;
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+ 
+  const path = `references/${_refRowId}/${uid()}_${file.name}`;
+  const sRef = storageRef(storage, path);
+  const task = uploadBytesResumable(sRef, file);
+ 
+  const progWrap = document.getElementById('upload-progress');
+  const progBar  = document.getElementById('upload-progress-bar');
+  const statusEl = document.getElementById('upload-status');
+  progWrap.style.display = 'block';
+  statusEl.style.display = 'block';
+  statusEl.textContent = `Uploading ${file.name}…`;
+ 
+  task.on('state_changed',
+    snap => {
+      const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
+      progBar.style.width = pct + '%';
+    },
+    err => {
+      statusEl.textContent = '⚠️ Upload failed: ' + err.message;
+      errEl.textContent = err.message;
+      errEl.style.display = 'block';
+      progWrap.style.display = 'none';
+    },
+    async () => {
+      const url = await getDownloadURL(task.snapshot.ref);
+      const refEntry = {
+        id: uid(),
+        type: 'file',
+        url,
+        name: file.name,
+        label: file.name,
+        mimeType: file.type,
+        size: file.size,
+        storagePath: path,
+        createdAt: Date.now()
+      };
+      addRefEntry(refEntry);
+      statusEl.textContent = `✓ ${file.name} uploaded`;
+      progWrap.style.display = 'none';
+      setTimeout(() => { statusEl.style.display = 'none'; }, 2500);
+      document.getElementById('file-input').value = '';
+    }
+  );
+}
+ 
+function addRefEntry(entry) {
+  const res = getRefRow();
+  if (!res) return;
+  if (!Array.isArray(res.row.references)) res.row.references = [];
+  res.row.references.push(entry);
+  saveToFirebase(res.wi);
+  renderRefLists();
+  renderAll(); // refresh badge count
+}
+ 
+function addLink() {
+  const urlEl   = document.getElementById('link-url-inp');
+  const labelEl = document.getElementById('link-label-inp');
+  const url = urlEl.value.trim();
+  if (!url) { urlEl.focus(); return; }
+  const entry = {
+    id: uid(),
+    type: 'link',
+    url,
+    label: labelEl.value.trim() || url,
+    createdAt: Date.now()
+  };
+  urlEl.value = '';
+  labelEl.value = '';
+  addRefEntry(entry);
+}
+ 
+function removeRef(refId) {
+  const res = getRefRow();
+  if (!res) return;
+  const refs = res.row.references || [];
+  const target = refs.find(r => r.id === refId);
+  if (target && target.storagePath) {
+    // Delete from Firebase Storage (best-effort)
+    try {
+      deleteObject(storageRef(storage, target.storagePath)).catch(() => {});
+    } catch (_) {}
+  }
+  res.row.references = refs.filter(r => r.id !== refId);
+  saveToFirebase(res.wi);
+  renderRefLists();
+  renderAll();
+}
+ 
+// Drag-and-drop on upload zone
+const uploadZone = document.getElementById('upload-zone');
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('drag-over'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('drag-over'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault();
+  uploadZone.classList.remove('drag-over');
+  window._handleFileSelect(e.dataTransfer.files);
+});
+ 
+// Close modal on backdrop click
+document.getElementById('ref-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('ref-modal')) closeRefModal();
+});
  
 // ── Interactions ──────────────────────────────────────────────────────────────
 function updateField(id, field, val) {
@@ -739,27 +1157,20 @@ function styleStatus(sel) {
 function duplicateRow(id, wi, ri) {
   const row = weeks[wi].rows.find(r => r.id === id);
   if (!row) return;
-  const clone = Object.assign({}, row, { id: uid(), isDoctorDidi: false, published: false });
+  const clone = Object.assign({}, row, { id: uid(), isDoctorDidi: false, published: false, references: [] });
   weeks[wi].rows.splice(ri + 1, 0, clone);
   renderAll();
   saveToFirebase(wi);
 }
  
 // ── PIN-protected delete ─────────────────────────────────────────────────────
-// Change this to your own secret PIN. It is only checked in the browser —
-// for true security you'd need a backend, but this stops casual deletion.
-const ADMIN_PIN = "7749"; // ← CHANGE THIS TO YOUR PIN
- 
-let _pinUnlocked = false;   // stays true for the whole browser session once correct PIN entered
+const ADMIN_PIN = "7749";
+let _pinUnlocked = false;
 let _pendingDeleteId  = null;
 let _pendingDeleteWi  = null;
  
 function guardedDeleteRow(id, wi) {
-  if (_pinUnlocked) {
-    deleteRow(id, wi);
-    return;
-  }
-  // Show modal
+  if (_pinUnlocked) { deleteRow(id, wi); return; }
   _pendingDeleteId = id;
   _pendingDeleteWi = wi;
   document.getElementById('pin-error').textContent = '';
@@ -782,7 +1193,7 @@ function pinConfirm() {
   } else {
     const inp = document.getElementById('pin-input');
     inp.classList.remove('error');
-    void inp.offsetWidth; // re-trigger animation
+    void inp.offsetWidth;
     inp.classList.add('error');
     document.getElementById('pin-error').textContent = 'Incorrect PIN. Try again.';
     inp.value = '';
@@ -817,7 +1228,7 @@ function addRow(wi) {
   weeks[wi].rows.push({
     id: uid(), date: refRow ? refRow.date : '', day: '',
     isMonday: false, isDoctorDidi: false,
-    title: '', script: '', visual: '', reference: '', assignedTo: '',
+    title: '', script: '', visual: '', references: [], assignedTo: '',
     status: 'Idea', deadline: refRow ? refRow.date : '', published: false
   });
   renderAll();
@@ -825,9 +1236,7 @@ function addRow(wi) {
 }
  
 function addCardForDay(wi, date, day) {
-  // Insert new card right after the last card for this day
   const rows = weeks[wi].rows;
-  // Find last index of this day
   let insertAt = -1;
   for (let i = 0; i < rows.length; i++) {
     if (rows[i].date === date && rows[i].day === day) insertAt = i;
@@ -835,51 +1244,42 @@ function addCardForDay(wi, date, day) {
   const newCard = {
     id: uid(), date, day,
     isMonday: day === 'Monday', isDoctorDidi: false,
-    title: '', script: '', visual: '', reference: '', assignedTo: '',
+    title: '', script: '', visual: '', references: [], assignedTo: '',
     status: 'Idea', deadline: date, published: false
   };
-  if (insertAt >= 0) {
-    rows.splice(insertAt + 1, 0, newCard);
-  } else {
-    rows.push(newCard);
-  }
+  if (insertAt >= 0) rows.splice(insertAt + 1, 0, newCard);
+  else rows.push(newCard);
   renderAll();
   saveToFirebase(wi);
 }
  
 function addWeekBlock() {
   const newWeekNum = weeks.length + 1;
-  // Week 1 used 6 days (Tue–Sun), subsequent weeks use 7 days (Mon–Sun)
   const weekOffset = 6 + (newWeekNum - 2) * 7;
   const weekStart = new Date(START);
   weekStart.setDate(START.getDate() + weekOffset);
   const DAY_NAMES = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
   const rows = [];
-  const epNum = 7 + (newWeekNum - 1); // ep numbering continues from buildWeeks
- 
+  const epNum = 7 + (newWeekNum - 1);
   for (let d = 0; d < 7; d++) {
     const date = new Date(weekStart);
     date.setDate(weekStart.getDate() + d);
     const dayName = DAY_NAMES[d];
     const dateStr = date.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
- 
     if (d === 0) {
-      // Monday — Dr Didi + 1 blank
       rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: true, isDoctorDidi: true,
         episode: epNum, title: `Doctor Didi Episode ${epNum}`,
-        script: '', visual: '', reference: '', assignedTo: '',
+        script: '', visual: '', references: [], assignedTo: '',
         status: 'Idea', deadline: dateStr, published: false });
       rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: true, isDoctorDidi: false,
-        title: '', script: '', visual: '', reference: '', assignedTo: '',
+        title: '', script: '', visual: '', references: [], assignedTo: '',
         status: 'Idea', deadline: dateStr, published: false });
     } else {
-      // Tue–Sun — 1 blank
       rows.push({ id: uid(), date: dateStr, day: dayName, isMonday: false, isDoctorDidi: false,
-        title: '', script: '', visual: '', reference: '', assignedTo: '',
+        title: '', script: '', visual: '', references: [], assignedTo: '',
         status: 'Idea', deadline: dateStr, published: false });
     }
   }
- 
   weeks.push({ weekNum: newWeekNum, rows });
   renderAll();
   saveToFirebase(weeks.length - 1);
@@ -906,17 +1306,24 @@ function updateHeaderBadge() {
 }
  
 // ── Window exports ────────────────────────────────────────────────────────────
-window._updateField     = updateField;
-window._styleStatus     = styleStatus;
-window._duplicateRow    = duplicateRow;
-window._deleteRow           = deleteRow;
-window._guardedDeleteRow    = guardedDeleteRow;
-window._pinConfirm          = pinConfirm;
-window._pinCancel           = pinCancel;
-window._togglePublished = togglePublished;
-window._addRow          = addRow;
-window._addCardForDay   = addCardForDay;
-window.addWeekBlock     = addWeekBlock;
+window._updateField       = updateField;
+window._styleStatus       = styleStatus;
+window._duplicateRow      = duplicateRow;
+window._deleteRow         = deleteRow;
+window._guardedDeleteRow  = guardedDeleteRow;
+window._pinConfirm        = pinConfirm;
+window._pinCancel         = pinCancel;
+window._togglePublished   = togglePublished;
+window._addRow            = addRow;
+window._addCardForDay     = addCardForDay;
+window.addWeekBlock       = addWeekBlock;
+ 
+window._openRefModal      = openRefModal;
+window._closeRefModal     = closeRefModal;
+window._switchRefTab      = switchRefTab;
+window._handleFileSelect  = handleFileSelect;
+window._addLink           = addLink;
+window._removeRef         = removeRef;
  
 // ── Boot ──────────────────────────────────────────────────────────────────────
 startRealtimeSync();
