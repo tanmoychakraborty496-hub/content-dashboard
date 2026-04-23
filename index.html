@@ -660,10 +660,10 @@ function startRealtimeSync() {
           await setDoc(doc(db, "calendar", "week-" + i), weeks[i]);
         }
       } else if (loaded.length === 0) {
-        weeks = buildWeeks();
-        for (let i = 0; i < weeks.length; i++) {
-          await setDoc(doc(db, "calendar", "week-" + i), weeks[i]);
-        }
+  weeks = buildWeeks();
+  const writes = weeks.map((w, i) => setDoc(doc(db, "calendar", "week-" + i), w));
+  await Promise.all(writes);
+}
       } else {
         loaded.sort((a, b) => (a.weekNum || 0) - (b.weekNum || 0));
         weeks = loaded;
